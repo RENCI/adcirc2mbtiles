@@ -51,7 +51,7 @@ ENV PYTHONPATH=/repo/adcirc2mbtiles
 # set the location of the output directory
 ENV RUNTIMEDIR=/stageDIR
 
-ENTRYPOINT ["conda run -n adcirc2mbtiles"]
+ENTRYPOINT ["/opt/conda/condabin/conda run -n adcirc2mbtiles"]
 
 CMD ["python", "/repos/adcirc2mbtiles/run/adcirc2geotiff.py", "maxele.63.nc", "tiff"]
 
