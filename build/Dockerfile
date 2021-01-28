@@ -30,23 +30,24 @@ RUN conda update conda && \
 RUN conda init bash
 
 # make d directory for the repos and go there
-RUN mkdir /repo
-WORKDIR /repo
+RUN mkdir /repos
+WORKDIR /repos
 
-# get the repo
-RUN git clone https://github.com/renci/adcirc2mbtiles.git
+# get the repos
+RUN git clone https://github.com/renci/adcirc2mbtiles.git 
+    #&&\ git clone https://github.com/RENCI/ADCIRC2mbtiles.git
 
 # define working directory
 WORKDIR adcirc2mbtiles/build
 
-# Create the environment, initialize conda in bash config files, and install repo:
+# Create the environment, initialize conda in bash config files, and install repos:
 RUN conda env create -f environment.yml
 
 # change to the run directory                        
-WORKDIR /repo/adcirc2mbtiles/run
+WORKDIR /repos/adcirc2mbtiles/run
 
 # set the python path
-ENV PYTHONPATH=/repo/adcirc2mbtiles
+ENV PYTHONPATH=/repos/adcirc2mbtiles
 
 # set the location of the output directory
 ENV RUNTIMEDIR=/stageDIR
