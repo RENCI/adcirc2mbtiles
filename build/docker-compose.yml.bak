@@ -12,8 +12,7 @@ services:
     entrypoint:
       - /bin/bash
       - -c
-      - "conda run -n adcirc2mbtiles" 
-        python adcirc2geotiff.py ${inputFile} ${outputDIR}"
+      - "conda run -n adcirc2mbtiles python adcirc2geotiff.py ${inputFile} ${outputDIR}" 
 
     image: adcirc_mbtiles:latest
 

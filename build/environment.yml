@@ -1,4 +1,4 @@
-name: adcirc2geotiff 
+name: adcirc2mbtiles
 channels:
   - conda-forge
 dependencies:

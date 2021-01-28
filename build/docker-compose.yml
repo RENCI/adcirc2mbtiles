@@ -9,11 +9,6 @@ services:
     volumes:
       - /d/dvols/apzviz:/stageDIR
 
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "conda run -n adcirc2mbtiles" 
-
     image: adcirc_mbtiles:latest
 
     stdin_open: true
