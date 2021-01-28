@@ -26,22 +26,25 @@ RUN apt-get clean && apt-get update &&\
 RUN conda update conda && \
     conda config --add channels conda-forge
 
-# tell conda what the shell is
-RUN conda init bash
+WORKDIR /app
+
+# Create the environment, initialize conda in bash config files, and install repos:
+COPY environment.yml .
+RUN conda env create -f environment.yml
+
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "adcirc2mbtiles", "/bin/bash", "-c"]
 
 # make d directory for the repos and go there
 RUN mkdir /repos
 WORKDIR /repos
 
 # get the repos
-RUN git clone https://github.com/renci/adcirc2mbtiles.git 
-    #&&\ git clone https://github.com/RENCI/ADCIRC2mbtiles.git
+RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
+    git clone https://github.com/RENCI/ADCIRC2mbtiles.git
 
 # define working directory
 WORKDIR adcirc2mbtiles/build
-
-# Create the environment, initialize conda in bash config files, and install repos:
-RUN conda env create -f environment.yml
 
 # change to the run directory                        
 WORKDIR /repos/adcirc2mbtiles/run
@@ -52,7 +55,7 @@ ENV PYTHONPATH=/repos/adcirc2mbtiles
 # set the location of the output directory
 ENV RUNTIMEDIR=/stageDIR
 
-ENTRYPOINT ["conda", "run", "-n", "adcirc2mbtiles"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"] 
 
-CMD ["python", "/repos/adcirc2mbtiles/run/adcirc2geotiff.py", "maxele.63.nc" "tiff"]
+CMD ["python", "adcirc2geotiff.py", "maxele.63.nc", "tiff"]
 
