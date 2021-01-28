@@ -1,0 +1,9 @@
+name: adcirc2geotiff 
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - qgis=3.14.1
+  - pip
+  - pip:
+      - wget==3.2
