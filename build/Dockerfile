@@ -52,5 +52,5 @@ ENV PYTHONPATH=/repos/adcirc2mbtiles
 # set the location of the output directory
 ENV RUNTIMEDIR=/stageDIR
 
-ENTRYPOINT ["conda run -n adcirc2mbtiles"]
+ENTRYPOINT ["conda", "run", "-n", "adcirc2mbtiles"]
 
