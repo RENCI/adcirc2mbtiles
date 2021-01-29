@@ -6,13 +6,13 @@ Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file.
   docker build -t adcirc2mbtiles_image .
 
 ## Run
-  To run default settings you must make an input directory () in your /directory/path/to/storage/ directory 
+  To run default settings you must make an input directory () in your /directory/path/to/storage/ directory: 
 
-    mkdir /directory/path/to/storage/input 
+    mkdir /directory/path/to/storage/input
 
   and put a maxele.63.nc file in it. Then run following command:
 
-    docker run --volume /directory/path/to/storage/:/stageDIR adcirc2mbtiles_image 
+    docker run --volume /directory/path/to/storage/:/stageDIR adcirc2mbtiles_image
 
   To use a different file, such as maxwvel.63.nc, you put that file in the input directory and run the following command:
 
