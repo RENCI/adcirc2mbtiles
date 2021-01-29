@@ -16,10 +16,10 @@ Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file.
 
   To use a different file, such as maxwvel.63.nc, you put that file in the input directory and run the following command:
 
-    docker run --volume /d/dvols/apzviz:/stageDIR adcirc2mbtiles_image python adcirc2geotiff.py maxwvel.63.nc tiff
+    docker run --volume /directory/path/to/storage:/stageDIR adcirc2mbtiles_image python adcirc2geotiff.py maxwvel.63.nc tiff
 
   After producing a tiff image, you can create a mbtiles file by running the following command:
 
-    docker run --volume /d/dvols/apzviz:/stageDIR adcirc2mbtiles_image python geotiff2mbtiles.py maxele.63.tif 0 9 6 mbtiles
+    docker run --volume /directory/path/to/storage:/stageDIR adcirc2mbtiles_image python geotiff2mbtiles.py maxele.63.tif 0 9 6 mbtiles
 
 
