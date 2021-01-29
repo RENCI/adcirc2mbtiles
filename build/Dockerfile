@@ -41,7 +41,7 @@ WORKDIR /repos
 
 # get the repos
 RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
-    git clone https://github.com/RENCI/ADCIRC2mbtiles.git
+    git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
 # define working directory
 WORKDIR adcirc2mbtiles/build
