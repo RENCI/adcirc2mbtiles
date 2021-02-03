@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t adcirc2mbtiles_image .
+docker build -t jmpmcmanus/adcirc2mbtiles:latest .

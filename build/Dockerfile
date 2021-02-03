@@ -19,7 +19,6 @@ RUN apt-get clean && apt-get update &&\
     apt-get install -qy nano \
     libgl1 \
     libgl1-mesa-dev \
-    vim \
     aria2
 
 # update conda and set the download channel
@@ -43,17 +42,11 @@ WORKDIR /repos
 RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
-# define working directory
-WORKDIR adcirc2mbtiles/build
-
 # change to the run directory                        
 WORKDIR /repos/adcirc2mbtiles/run
 
 # set the python path
 ENV PYTHONPATH=/repos/adcirc2mbtiles
-
-# set the location of the output directory
-ENV RUNTIMEDIR=/stageDIR
 
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"] 
 

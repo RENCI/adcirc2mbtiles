@@ -1,1 +1,1 @@
-docker run --volume /d/dvols/apzviz:/stageDIR adcirc2mbtiles_image python adcirc2geotiff.py maxwvel.63.nc tiff
+docker run --volume /d/dvols/apzviz:/stageDIR jmpmcmanus/adcirc2mbtiles python adcirc2geotiff.py maxwvel.63.nc tiff
