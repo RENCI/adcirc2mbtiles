@@ -2,16 +2,17 @@
 import sys, os
 from subprocess import Popen, PIPE
 
-def geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDir):
+def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir):
     # Create mbtiles directory path
-    mbtilespath = dirPath.split('/')[0:-1]
-    mbtilespath.append(outputDir)
-    mbtilespath = "/".join(mbtilespath)
-    if not os.path.exists(mbtilespath):
+    #mbtilespath = dirPath.split('/')[0:-1]
+    #mbtilespath.append(outputDir)
+    #mbtilespath = "/".join(mbtilespath)
+    if not os.path.exists(outputDir):
         mode = 0o755
-        os.makedirs(mbtilespath, mode)
+        os.makedirs(outputDir, mode)
 
     gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
+    dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
     tiff = dirPath+'tiff'+'/'+inputFile
 
     diffzl = int(zlstop) - int(zlstart)
@@ -23,7 +24,7 @@ def geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDir):
         sys.exit('Incorrect zoom level')
 
     outputFile = ".".join(inputFile.split('.')[0:2])+'.'+zlstart+'.'+zlstop+'.mbtiles'
-    mbtiles = mbtilespath+'/'+outputFile
+    mbtiles = outputDir+'/'+outputFile
 
     cmds_list = [
       ['python', gdal2mbtiles_cmd, tiff, '-z', zl, '--processes='+cpu, mbtiles]
@@ -40,4 +41,4 @@ cpu = sys.argv[4]
 outputDir = sys.argv[5]
 dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDir)
+geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir)

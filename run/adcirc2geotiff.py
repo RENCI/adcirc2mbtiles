@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, json, warnings
+import os, sys, json, warnings, pdb
 from functools import wraps
 import numpy as np
 
@@ -50,27 +50,27 @@ def initialize_processing(app):
     Processing.initialize()
     return (app, processing)
 
-def makeDIRS(dirPath, outputDir):
+def makeDIRS(outputDir):
     # Create tiff directory path
-    tifpath = dirPath.split('/')[0:-1]
-    tifpath.append(outputDir)
-    tifpath = "/".join(tifpath)
-    if not os.path.exists(tifpath):
+    #tifpath = dirPath.split('/')[0:-1]
+    #tifpath.append(outputDir)
+    #tifpath = "/".join(tifpath)
+    if not os.path.exists(outputDir):
         mode = 0o755
-        os.makedirs(tifpath, mode)
+        os.makedirs(outputDir, mode)
 
     # Create adcirc2geotiff directory path
-    adcirc2geotiffpath = dirPath.split('/')[0:-2]
-    adcirc2geotiffpath.append('adcirc2geotiff')
-    adcirc2geotiffpath = "/".join(adcirc2geotiffpath)
-    if not os.path.exists(adcirc2geotiffpath):
-        mode = 0o755
-        os.makedirs(adcirc2geotiffpath, mode)
+    #adcirc2geotiffpath = dirPath.split('/')[0:-2]
+    #adcirc2geotiffpath.append('adcirc2geotiff')
+    #adcirc2geotiffpath = "/".join(adcirc2geotiffpath)
+    #if not os.path.exists(adcirc2geotiffpath):
+    #    mode = 0o755
+    #    os.makedirs(adcirc2geotiffpath, mode)
 
 def getParameters(dirPath, inputFile, outputDir):
     ncfile = inputFile.split('/')[-1].strip()
     tiffile = ncfile.split('.')[0]+'.raw.'+ncfile.split('.')[1]+'.tif'
-    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+ncfile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+dirPath+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
+    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+ncfile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
@@ -231,7 +231,7 @@ inputFile = sys.argv[1]
 outputDir = sys.argv[2]
 dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-makeDIRS(dirPath, outputDir.strip())
+makeDIRS(outputDir.strip())
 
 os.environ['QT_QPA_PLATFORM']='offscreen'
 xdg_runtime_dir = '/run/user/adcirc2geotiff'
