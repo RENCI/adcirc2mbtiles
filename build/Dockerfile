@@ -19,6 +19,7 @@ RUN apt-get clean && apt-get update &&\
     apt-get install -qy nano \
     libgl1 \
     libgl1-mesa-dev \
+    vim \
     aria2
 
 # update conda and set the download channel

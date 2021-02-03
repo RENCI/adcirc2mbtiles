@@ -2,10 +2,10 @@
 import sys, os
 from subprocess import Popen, PIPE
 
-def geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDIR):
+def geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDir):
     # Create mbtiles directory path
     mbtilespath = dirPath.split('/')[0:-1]
-    mbtilespath.append(outputDIR)
+    mbtilespath.append(outputDir)
     mbtilespath = "/".join(mbtilespath)
     if not os.path.exists(mbtilespath):
         mode = 0o755
@@ -33,11 +33,11 @@ def geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDIR):
     for proc in procs_list:
         proc.wait()
 
-dirPath = '/stageDIR/'
 inputFile = sys.argv[1]
 zlstart = sys.argv[2]
 zlstop = sys.argv[3]
 cpu = sys.argv[4]
-outputDIR = sys.argv[5]
+outputDir = sys.argv[5]
+dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDIR)
+geotiff2mbtiles(dirPath, inputFile, zlstart, zlstop, cpu, outputDir)

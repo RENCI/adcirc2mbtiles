@@ -50,10 +50,10 @@ def initialize_processing(app):
     Processing.initialize()
     return (app, processing)
 
-def makeDIRS(dirPath, outputDIR):
+def makeDIRS(dirPath, outputDir):
     # Create tiff directory path
     tifpath = dirPath.split('/')[0:-1]
-    tifpath.append(outputDIR)
+    tifpath.append(outputDir)
     tifpath = "/".join(tifpath)
     if not os.path.exists(tifpath):
         mode = 0o755
@@ -67,10 +67,10 @@ def makeDIRS(dirPath, outputDIR):
         mode = 0o755
         os.makedirs(adcirc2geotiffpath, mode)
 
-def getParameters(dirPath, inputFile, outputDIR):
+def getParameters(dirPath, inputFile, outputDir):
     ncfile = inputFile.split('/')[-1].strip()
     tiffile = ncfile.split('.')[0]+'.raw.'+ncfile.split('.')[1]+'.tif'
-    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+ncfile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+dirPath+outputDIR+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
+    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+ncfile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+dirPath+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
@@ -227,11 +227,11 @@ def styleRaster(filename):
         raise Exception('Invalid raster')
 
 
-dirPath = '/stageDIR/'
 inputFile = sys.argv[1]
-outputDIR = sys.argv[2]
+outputDir = sys.argv[2]
+dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-makeDIRS(dirPath, outputDIR.strip())
+makeDIRS(dirPath, outputDir.strip())
 
 os.environ['QT_QPA_PLATFORM']='offscreen'
 xdg_runtime_dir = '/run/user/adcirc2geotiff'
@@ -242,7 +242,7 @@ app = initialize_qgis_application()
 app.initQgis()
 app, processing = initialize_processing(app)
 
-parameters = getParameters(dirPath, inputFile.strip(), outputDIR.strip())
+parameters = getParameters(dirPath, inputFile.strip(), outputDir.strip())
 filename = exportRaster(parameters)
 styleRaster(filename)
 
