@@ -4,9 +4,6 @@ from subprocess import Popen, PIPE
 
 def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir):
     # Create mbtiles directory path
-    #mbtilespath = dirPath.split('/')[0:-1]
-    #mbtilespath.append(outputDir)
-    #mbtilespath = "/".join(mbtilespath)
     if not os.path.exists(outputDir):
         mode = 0o755
         os.makedirs(outputDir, mode)

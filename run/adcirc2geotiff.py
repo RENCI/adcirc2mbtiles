@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, json, warnings, pdb
+import os, sys, json, warnings
 from functools import wraps
 import numpy as np
 
@@ -52,20 +52,9 @@ def initialize_processing(app):
 
 def makeDIRS(outputDir):
     # Create tiff directory path
-    #tifpath = dirPath.split('/')[0:-1]
-    #tifpath.append(outputDir)
-    #tifpath = "/".join(tifpath)
     if not os.path.exists(outputDir):
         mode = 0o755
         os.makedirs(outputDir, mode)
-
-    # Create adcirc2geotiff directory path
-    #adcirc2geotiffpath = dirPath.split('/')[0:-2]
-    #adcirc2geotiffpath.append('adcirc2geotiff')
-    #adcirc2geotiffpath = "/".join(adcirc2geotiffpath)
-    #if not os.path.exists(adcirc2geotiffpath):
-    #    mode = 0o755
-    #    os.makedirs(adcirc2geotiffpath, mode)
 
 def getParameters(dirPath, inputFile, outputDir):
     ncfile = inputFile.split('/')[-1].strip()

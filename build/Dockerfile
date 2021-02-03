@@ -49,7 +49,7 @@ WORKDIR /repos/adcirc2mbtiles/run
 # set the python path
 ENV PYTHONPATH=/repos/adcirc2mbtiles
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"] 
+#ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"] 
 
-CMD ["python", "adcirc2geotiff.py", "maxele.63.nc", "/data/sj37392jdj28538/tiff"]
+#CMD ["python", "adcirc2geotiff.py", "maxele.63.nc", "/data/sj37392jdj28538/tiff"]
 
