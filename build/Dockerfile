@@ -1,3 +1,11 @@
+##############
+# Docker file for the creation of the adcirc geotiffs and mbtiles files.
+#
+# to create image: docker build -t adcirc2mbtiles:latest .
+# to push image:
+#       docker tag adcirc_supp:latest renciorg/adcirc2mbtiles:latest
+#       docker push renciorg/adcirc2mbtiles:latest
+##############
 # need at least 103 GB to process to tiffs. This includes 102 GB for the tiffs, and 1 GB for the netCDF files.
 # need an additional 2 GB for the mbtiles files, for a total of 105 GB. Round off to 110 GB for good luck.
 # need 28+ GB for the final color tiffs, and 70+ GB for the raw tiffs. The raw tiffs will be deleted after 
@@ -5,6 +13,7 @@
 # to process one maxele.63.nc file to tiff, I will need 52+ MB for the netCDF file, 14+ GB for the raw tiff
 # file and 7 GB for the color tiff file, for a total of 22 GB.
 # set the base image
+##############
 FROM continuumio/anaconda3
 
 # author
@@ -48,6 +57,6 @@ WORKDIR /repos/adcirc2mbtiles/run
 # set the python path
 ENV PYTHONPATH=/repos/adcirc2mbtiles
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"]
+#ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"]
 
 #CMD ["python", "adcirc2geotiff.py", "--inputFile", "maxele.63.nc", "--outputDir", "/data/sj37392jdj28538/tiff"]
