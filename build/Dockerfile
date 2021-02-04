@@ -3,7 +3,7 @@
 #
 # to create image: docker build -t adcirc2mbtiles:latest .
 # to push image:
-#       docker tag adcirc_supp:latest renciorg/adcirc2mbtiles:latest
+#       docker tag adcirc2mbtiles:latest renciorg/adcirc2mbtiles:latest
 #       docker push renciorg/adcirc2mbtiles:latest
 ##############
 # need at least 103 GB to process to tiffs. This includes 102 GB for the tiffs, and 1 GB for the netCDF files.
@@ -14,7 +14,7 @@
 # file and 7 GB for the color tiff file, for a total of 22 GB.
 # set the base image
 ##############
-FROM continuumio/anaconda3
+FROM continuumio/miniconda
 
 # author
 MAINTAINER Jim McManus
