@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, json, warnings
+import os, sys, argparse, json, warnings
 from functools import wraps
 import numpy as np
 
@@ -57,9 +57,8 @@ def makeDIRS(outputDir):
         os.makedirs(outputDir, mode)
 
 def getParameters(dirPath, inputFile, outputDir):
-    ncfile = inputFile.split('/')[-1].strip()
-    tiffile = ncfile.split('.')[0]+'.raw.'+ncfile.split('.')[1]+'.tif'
-    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+ncfile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
+    tiffile = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
+    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+inputFile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
@@ -215,25 +214,44 @@ def styleRaster(filename):
     if not rlayer.isValid():
         raise Exception('Invalid raster')
 
+def deleteRaw(inputFile, outputDir):
+    tiffraw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
+    os.remove(outputDir+'/'+tiffraw)
+    os.remove(outputDir+'/'+tiffraw+'.aux.xml')
 
-inputFile = sys.argv[1]
-outputDir = sys.argv[2]
-dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
+def main(args):
+    inputFile = args.inputFile
+    outputDir = args.outputDir
 
-makeDIRS(outputDir.strip())
+    dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-os.environ['QT_QPA_PLATFORM']='offscreen'
-xdg_runtime_dir = '/run/user/adcirc2geotiff'
-os.makedirs(xdg_runtime_dir, exist_ok=True)
-os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
+    makeDIRS(outputDir.strip())
 
-app = initialize_qgis_application() 
-app.initQgis()
-app, processing = initialize_processing(app)
+    os.environ['QT_QPA_PLATFORM']='offscreen'
+    xdg_runtime_dir = '/run/user/adcirc2geotiff'
+    os.makedirs(xdg_runtime_dir, exist_ok=True)
+    os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
 
-parameters = getParameters(dirPath, inputFile.strip(), outputDir.strip())
-filename = exportRaster(parameters)
-styleRaster(filename)
+    app = initialize_qgis_application() 
+    app.initQgis()
+    app, processing = initialize_processing(app)
 
-app.exitQgis()
+    parameters = getParameters(dirPath, inputFile.strip(), outputDir.strip())
+    filename = exportRaster(parameters)
+    styleRaster(filename)
+
+    app.exitQgis()
+
+    deleteRaw(inputFile, outputDir)
+
+if __name__ == "__main__":
+    """ This is executed when run from the command line """
+    parser = argparse.ArgumentParser()
+
+    # Optional argument which requires a parameter (eg. -d test)
+    parser.add_argument("--inputFile", action="store", dest="inputFile")
+    parser.add_argument("--outputDir", action="store", dest="outputDir")
+
+    args = parser.parse_args()
+    main(args)
 

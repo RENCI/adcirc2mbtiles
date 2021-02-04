@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os
+import sys, os, argparse
 from subprocess import Popen, PIPE
 
 def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir):
@@ -31,11 +31,27 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir):
     for proc in procs_list:
         proc.wait()
 
-inputFile = sys.argv[1]
-zlstart = sys.argv[2]
-zlstop = sys.argv[3]
-cpu = sys.argv[4]
-outputDir = sys.argv[5]
-dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
+def main(args):
+     inputFile = args.inputFile 
+     zlstart = args.zlstart
+     zlstop = args.zlstop
+     cpu = args.cpu
+     outputDir = args.outputDir
+     #dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
 
-geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir)
+     geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDir)
+
+if __name__ == "__main__":
+    """ This is executed when run from the command line """
+    parser = argparse.ArgumentParser()
+
+    # Optional argument which requires a parameter (eg. -d test)
+    parser.add_argument("--inputFile", action="store", dest="inputFile")
+    parser.add_argument("--zlstart", action="store", dest="zlstart")
+    parser.add_argument("--zlstop", action="store", dest="zlstop")
+    parser.add_argument("--cpu", action="store", dest="cpu")
+    parser.add_argument("--outputDir", action="store", dest="outputDir")
+
+    args = parser.parse_args()
+    main(args)
+

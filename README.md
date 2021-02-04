@@ -10,7 +10,7 @@ Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file.
 
       ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "adcirc2mbtiles"] 
 
-      CMD ["python", "adcirc2geotiff.py", "maxele.63.nc", "/data/sj37392jdj28538/tiff"]
+      CMD ["python", "adcirc2geotiff.py", "--inputFile", "maxele.63.nc", "--outputDir", "/data/sj37392jdj28538/tiff"]
 
   Then to run default settings you must make an input directory () in your /directory/path/to/storage/ directory: 
 
