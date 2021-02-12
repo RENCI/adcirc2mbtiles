@@ -40,9 +40,6 @@ WORKDIR /app
 COPY environment.yml .
 RUN conda env create -f environment.yml
 
-# Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "adcirc2mbtiles", "/bin/bash", "-c"]
-
 # make d directory for the repos and go there
 RUN mkdir /repos
 WORKDIR /repos
