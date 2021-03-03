@@ -62,6 +62,7 @@ def getParameters(dirPath, inputFile, outputDir):
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
+@ignore_warnings
 def exportRaster(parameters):
     # Open layer from inputFile 
     inputFile = parameters['INPUT_LAYER']
