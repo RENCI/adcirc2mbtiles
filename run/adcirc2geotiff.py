@@ -65,7 +65,7 @@ def getParameters(dirPath, inputFile, outputDir):
 @ignore_warnings
 def exportRaster(parameters):
     # Open layer from inputFile 
-    inputFile = parameters['INPUT_LAYER']
+    inputFile = 'Ugrid:'+'"'+parameters['INPUT_LAYER']+'"'
     meshfile = inputFile.strip().split('/')[-1]
     meshlayer = meshfile.split('.')[0]
     layer = QgsMeshLayer(inputFile, meshlayer, 'mdal')
@@ -111,6 +111,7 @@ def exportRaster(parameters):
         raise Exception('Invalid mesh')
 
 # Add color and set transparency to GeoTiff
+@ignore_warnings
 def styleRaster(filename):
     # Create outfile name
     outfile = "".join(filename.strip().split('.raw'))
