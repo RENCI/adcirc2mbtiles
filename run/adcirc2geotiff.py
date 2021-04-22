@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys, argparse, json, warnings
+from loguru import logger
 from functools import wraps
 import numpy as np
 
@@ -55,6 +56,9 @@ def makeDIRS(outputDir):
     if not os.path.exists(outputDir):
         mode = 0o755
         os.makedirs(outputDir, mode)
+        logger.info('Made directory '+outputDir.split('/')[-1]+ '.')
+    else:
+        logger.info('Directory '+outputDir.split('/')[-1]+' already made.')
 
 def getParameters(dirPath, inputFile, outputDir):
     tiffile = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
@@ -104,6 +108,8 @@ def exportRaster(parameters):
         rdp.writeBlock(block, 1)
         rdp.setNoDataValue(1, block.noDataValue())
         rdp.setEditable(False)
+
+        logger.info('Regridded mesh data in '+meshfile.split('"')[0]+' to float64 grid, and saved to tiff ('+output_layer.split('/')[-1]+') file.')
 
         return(output_layer)
 
@@ -213,6 +219,9 @@ def styleRaster(filename):
             crs,
             transform_context
         )
+
+        logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+outfile.split('/')[-1]+') file')
+
     if not rlayer.isValid():
         raise Exception('Invalid raster')
 
@@ -221,11 +230,15 @@ def deleteRaw(inputFile, outputDir):
     os.remove(outputDir+'/'+tiffraw)
     os.remove(outputDir+'/'+tiffraw+'.aux.xml')
 
+@logger.catch
 def main(args):
     inputFile = args.inputFile
     outputDir = args.outputDir
 
     dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
+
+    logger.remove()
+    logger.add(dirPath+'logs/adcirc2geotiff-logs.log', level='DEBUG')
 
     makeDIRS(outputDir.strip())
 
@@ -233,18 +246,24 @@ def main(args):
     xdg_runtime_dir = '/run/user/adcirc2geotiff'
     os.makedirs(xdg_runtime_dir, exist_ok=True)
     os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
+    logger.info('Set QGIS enviroment.')
 
     app = initialize_qgis_application() 
     app.initQgis()
     app, processing = initialize_processing(app)
+    logger.info('Initialzed QGIS.')
 
     parameters = getParameters(dirPath, inputFile.strip(), outputDir.strip())
+    logger.info('Got mesh regrid paramters for '+inputFile.strip())
+
     filename = exportRaster(parameters)
     styleRaster(filename)
 
     app.exitQgis()
+    logger.info('Quit QGIS')
 
     deleteRaw(inputFile, outputDir)
+    logger.info('Deleted float64 tiff file')
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
