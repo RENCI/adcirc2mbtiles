@@ -1,5 +1,5 @@
 # adcirc2mbtiles
-Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file.
+Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file. The Python program geotiff2mbtiles.py uses the GitHub repository [gdal2mbtiles](https://github.com/pchynoweth/gdal2mbtiles.git) by pchynoweth.
 
 ## Build
   cd build  
