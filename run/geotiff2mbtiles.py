@@ -29,7 +29,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     if os.path.exists(outputDIR+'/'+outputFile):
         os.remove(outputDIR+'/'+outputFile)
         logger.info('Removed old mbtiles file '+outputDIR+'/'+outputFile+'.')
-        logger.info('Mbtiles path '+outputDIR.+'/'+outputFile+'.')
+        logger.info('Mbtiles path '+outputDIR+'/'+outputFile+'.')
     else:
         logger.info('Mbtiles path '+outputDIR+'/'+outputFile+'.')
 
