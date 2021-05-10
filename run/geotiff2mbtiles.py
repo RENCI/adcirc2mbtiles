@@ -44,15 +44,15 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     logger.info('Creating mbtiles file '+outputFile+' from tiff file '+inputFile+'.')
 
     # Create final directory path
-    if not os.path.exists(finalDIR+'/mbtiles'):
+    if not os.path.exists(finalDIR):
         mode = 0o755
-        os.makedirs(finalDIR+'/mbtiles', mode)
-        logger.info('Made directory '+finalDIR.split('/')[-1]+'/mbtiles.')
+        os.makedirs(finalDIR, mode)
+        logger.info('Made directory '+finalDIR.split('/')[-1]+ '.')
     else:
-        logger.info('Directory '+finalDIR.split('/')[-1]+'/mbtiles already made.')
+        logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
 
-    shutil.move(outputDIR+'/'+outputFile, finalDIR+'/mbtiles/'+outputFile)
-    logger.info('Moved mbtiles file to '+finalDIR.split('/')[-1]+'/mbtiles directory.')
+    shutil.move(outputDIR+'/'+outputFile, finalDIR+'/'+outputFile)
+    logger.info('Moved mbtiles file to '+finalDIR.split('/')[-1]+' directory.')
 
 @logger.catch
 def main(args):
