@@ -51,18 +51,18 @@ def initialize_processing(app):
     Processing.initialize()
     return (app, processing)
 
-def makeDIRS(outputDir):
+def makeDIRS(outputDIR):
     # Create tiff directory path
-    if not os.path.exists(outputDir):
+    if not os.path.exists(outputDIR):
         mode = 0o755
-        os.makedirs(outputDir, mode)
-        logger.info('Made directory '+outputDir.split('/')[-1]+ '.')
+        os.makedirs(outputDIR, mode)
+        logger.info('Made directory '+outputDIR.split('/')[-1]+ '.')
     else:
-        logger.info('Directory '+outputDir.split('/')[-1]+' already made.')
+        logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
 
-def getParameters(dirPath, inputFile, outputDir):
+def getParameters(dirPath, inputFile, outputDIR):
     tiffile = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
-    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+inputFile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDir+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
+    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+inputFile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDIR+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
@@ -225,23 +225,23 @@ def styleRaster(filename):
     if not rlayer.isValid():
         raise Exception('Invalid raster')
 
-def deleteRaw(inputFile, outputDir):
+def deleteRaw(inputFile, outputDIR):
     tiffraw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
-    os.remove(outputDir+'/'+tiffraw)
-    os.remove(outputDir+'/'+tiffraw+'.aux.xml')
+    os.remove(outputDIR+'/'+tiffraw)
+    os.remove(outputDIR+'/'+tiffraw+'.aux.xml')
 
 @logger.catch
 def main(args):
     inputFile = args.inputFile
-    outputDir = args.outputDir
+    outputDIR = args.outputDIR
 
-    dirPath = "/".join(outputDir.split('/')[0:-1])+'/'
+    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
     logger.remove()
     log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
     logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
 
-    makeDIRS(outputDir.strip())
+    makeDIRS(outputDIR.strip())
 
     os.environ['QT_QPA_PLATFORM']='offscreen'
     xdg_runtime_dir = '/run/user/adcirc2geotiff'
@@ -254,7 +254,7 @@ def main(args):
     app, processing = initialize_processing(app)
     logger.info('Initialzed QGIS.')
 
-    parameters = getParameters(dirPath, inputFile.strip(), outputDir.strip())
+    parameters = getParameters(dirPath, inputFile.strip(), outputDIR.strip())
     logger.info('Got mesh regrid paramters for '+inputFile.strip())
 
     filename = exportRaster(parameters)
@@ -263,7 +263,7 @@ def main(args):
     app.exitQgis()
     logger.info('Quit QGIS')
 
-    deleteRaw(inputFile, outputDir)
+    deleteRaw(inputFile, outputDIR)
     logger.info('Deleted float64 tiff file')
 
 if __name__ == "__main__":
@@ -272,7 +272,7 @@ if __name__ == "__main__":
 
     # Optional argument which requires a parameter (eg. -d test)
     parser.add_argument("--inputFile", action="store", dest="inputFile")
-    parser.add_argument("--outputDir", action="store", dest="outputDir")
+    parser.add_argument("--outputDIR", action="store", dest="outputDIR")
 
     args = parser.parse_args()
     main(args)
