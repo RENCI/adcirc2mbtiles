@@ -14,7 +14,8 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
 
     gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
-    tiff = dirPath+'tiff'+'/'+inputFile
+    tiffDIR = dirPath+'tiff'
+    tiff = tiffDIR+'/'+inputFile
 
     diffzl = int(zlstop) - int(zlstart)
     if diffzl != 0:
@@ -41,7 +42,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     for proc in procs_list:
         proc.wait()
 
-    logger.info('Creating mbtiles file '+outputFile+' from tiff file '+inputFile+'.')
+    logger.info('Created mbtiles file '+outputFile+' from tiff file '+inputFile+'.')
 
     # Create final directory path
     if not os.path.exists(finalDIR):
@@ -51,6 +52,8 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     else:
         logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
 
+    barFile = ".".join(outputFile.split('.')[0:2])+'.colorbar.png'
+    shutil.move(tiffDIR+'/'+barFile, finalDIR+'/'+barFile)
     shutil.move(outputDIR+'/'+outputFile, finalDIR+'/'+outputFile)
     logger.info('Moved mbtiles file to '+finalDIR.split('/')[-1]+' directory.')
 
