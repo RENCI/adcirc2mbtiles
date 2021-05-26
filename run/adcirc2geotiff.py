@@ -334,10 +334,10 @@ def main(args):
         hexList = ['#0000ff', '#00ffff', '#ffff00', '#ff0000']
         unit = 'm'
     elif barvar == 'maxwvel':
-        hexList = ['#ffffff', '#ffff00', '#ff0000', '#000000']
+        hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
         unit = 'm'
     elif barvar == 'swan_HS_max':
-        hexList = ['#ffffff', '#ffff00', '#ff0000', '#000000']
+        hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
         unit = 'm s-1'
     else:
         logger.info('Incorrect rlayer name')
