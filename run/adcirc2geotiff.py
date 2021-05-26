@@ -308,6 +308,9 @@ def main(args):
     log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
     logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
 
+    # When error exit program
+    logger.add(lambda _: sys.exit(1), level="ERROR")
+
     makeDIRS(outputDIR.strip())
 
     os.environ['QT_QPA_PLATFORM']='offscreen'

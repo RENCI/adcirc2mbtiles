@@ -70,6 +70,10 @@ def main(args):
     logger.remove()
     log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
     logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')
+
+    # When error exit program
+    logger.add(lambda _: sys.exit(1), level="ERROR")
+
     logger.info('Create mbtiles file, with zoom levels '+zlstart+' to '+zlstop+', from '+inputFile.strip()+' tiff file '+inputFile+' using '+cpu+' CPUs.')
 
     geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR)
