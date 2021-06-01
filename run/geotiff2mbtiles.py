@@ -15,7 +15,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
     tiffDIR = dirPath+'tiff'
-    tiff = tiffDIR+'/'+inputFile
+    tiffFile = tiffDIR+'/'+inputFile
 
     diffzl = int(zlstop) - int(zlstart)
     if diffzl != 0:
@@ -35,7 +35,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
         logger.info('Mbtiles path '+outputDIR+'/'+outputFile+'.')
 
     cmds_list = [
-      ['python', gdal2mbtiles_cmd, tiff, '-z', zl, '--processes='+cpu, outputDIR+'/'+outputFile]
+      ['python', gdal2mbtiles_cmd, tiffFile, '-z', zl, '--processes='+cpu, outputDIR+'/'+outputFile]
     ]
     procs_list = [Popen(cmd, stdout=PIPE, stderr=PIPE) for cmd in cmds_list]
 
@@ -52,10 +52,18 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     else:
         logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
 
-    barFile = ".".join(outputFile.split('.')[0:2])+'.colorbar.png'
-    shutil.move(tiffDIR+'/'+barFile, finalDIR+'/'+barFile)
     shutil.move(outputDIR+'/'+outputFile, finalDIR+'/'+outputFile)
     logger.info('Moved mbtiles file to '+finalDIR.split('/')[-1]+' directory.')
+
+    # Create colorbar filename from outputFile name
+    barFile = ".".join(outputFile.split('.')[0:2])+'.colorbar.png'
+
+    # Check if color bar exists.
+    if os.path.exists(tiffDIR+'/'+barFile):
+        shutil.move(tiffDIR+'/'+barFile, finalDIR+'/'+barFile)
+        logger.info('Moved colorbar file '+barFile+ 'to final/mbtiles directory.')
+    else:
+        logger.info('Colorbar '+barFile+' already moved.')
 
 @logger.catch
 def main(args):
@@ -65,7 +73,7 @@ def main(args):
     cpu = args.cpu
     outputDIR = args.outputDIR
     finalDIR = args.finalDIR
-    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
+    #dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
     logger.remove()
     log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
