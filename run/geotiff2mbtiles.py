@@ -12,7 +12,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     else:
         logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
 
-    gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
+    gdal2mbtiles_cmd = '/home/jmcmanus/Work/Surge/development/gdal2mbtiles/gdal2mbtiles.py'
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
     tiffDIR = dirPath+'tiff'
     tiffFile = tiffDIR+'/'+inputFile
@@ -54,16 +54,6 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
 
     shutil.move(outputDIR+'/'+outputFile, finalDIR+'/'+outputFile)
     logger.info('Moved mbtiles file to '+finalDIR.split('/')[-1]+' directory.')
-
-    # Create colorbar filename from outputFile name
-    barFile = ".".join(outputFile.split('.')[0:2])+'.colorbar.png'
-
-    # Check if color bar exists.
-    if os.path.exists(tiffDIR+'/'+barFile):
-        shutil.move(tiffDIR+'/'+barFile, finalDIR+'/'+barFile)
-        logger.info('Moved colorbar file '+barFile+ 'to final/mbtiles directory.')
-    else:
-        logger.info('Colorbar '+barFile+' already moved.')
 
 @logger.catch
 def main(args):

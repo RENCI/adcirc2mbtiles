@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, argparse, json, warnings
+import os, sys, argparse, shutil, json, warnings
 from loguru import logger
 from functools import wraps
 import matplotlib.pyplot as plt
@@ -229,10 +229,32 @@ def styleRaster(filename):
 
     return(valueList)
 
-def deleteRaw(inputFile, outputDIR):
+def moveRaw(inputFile, outputDIR, finalDIR):
+    # Create final/tiff directory path
+    if not os.path.exists(finalDIR):
+        mode = 0o755
+        os.makedirs(finalDIR, mode)
+        logger.info('Made directory '+finalDIR.split('/')[-1]+ '.')
+    else:
+        logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
+
     tiffraw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
-    os.remove(outputDIR+'/'+tiffraw)
-    os.remove(outputDIR+'/'+tiffraw+'.aux.xml')
+    # Check if raw tiff exists, and move it.
+    if os.path.exists(outputDIR+'/'+tiffraw):
+        shutil.move(outputDIR+'/'+tiffraw, finalDIR+'/'+tiffraw)
+        os.remove(outputDIR+'/'+tiffraw+'.aux.xml')
+        logger.info('Moved raw tiff file '+tiffraw+ 'to final/tiff directory.')
+    else:
+        logger.info('Raw tiff file '+rawtiff+' does not exist.')
+
+def moveBar(barPathFile, outputDIR, finalDIR):
+    barFile = barPathFile.split('/')[-1]
+    # Check if raw tiff exists, and move it.
+    if os.path.exists(barPathFile):
+        shutil.move(barPathFile, finalDIR+'/'+barFile)
+        logger.info('Moved colorbar file '+barFile+ 'to final/tiff directory.')
+    else:
+        logger.info('Colorbar file '+barFile+' does not exist.')
 
 def hex_to_rgb(value):
     '''
@@ -279,7 +301,7 @@ def get_continuous_cmap(hex_list, float_list=None):
     cmp = LinearSegmentedColormap('my_cmp', segmentdata=cdict, N=256)
     return(cmp)
 
-def create_colorbar(cmap,values,unit,barfile):
+def create_colorbar(cmap,values,unit,barPathFile):
     """Plot a colormap with its grayscale equivalent"""
     cmap = plt.cm.get_cmap(cmap)
     colors = cmap(np.arange(cmap.N))
@@ -295,12 +317,13 @@ def create_colorbar(cmap,values,unit,barfile):
     tick5 = str("{:.2f}".format(values[3]))+'>'
     ax.set_xticklabels([tick1, tick2, tick3, tick4, tick5])
     ax.set_xlabel(unit)
-    plt.savefig(barfile, transparent=True)
+    plt.savefig(barPathFile, transparent=True)
 
 @logger.catch
 def main(args):
     inputFile = args.inputFile
     outputDIR = args.outputDIR
+    finalDIR = args.finalDIR
 
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
@@ -330,7 +353,7 @@ def main(args):
     filename = exportRaster(parameters)
     valueList = styleRaster(filename)
 
-    barfile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
+    barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
     barvar = filename.strip().split('/')[-1].split('.')[0]
 
     if barvar == 'maxele':
@@ -346,13 +369,16 @@ def main(args):
         logger.info('Incorrect rlayer name')
 
     cmap = get_continuous_cmap(hexList)
-    create_colorbar(cmap,valueList,unit,barfile)
+    create_colorbar(cmap,valueList,unit,barPathFile)
 
     app.exitQgis()
     logger.info('Quit QGIS')
 
-    deleteRaw(inputFile, outputDIR)
-    logger.info('Deleted float64 tiff file')
+    moveRaw(inputFile, outputDIR, finalDIR)
+    logger.info('Moved float64 tiff file')
+
+    moveBar(barPathFile, outputDIR, finalDIR)
+    logger.info('Moved colorbar png file')
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
@@ -361,6 +387,7 @@ if __name__ == "__main__":
     # Optional argument which requires a parameter (eg. -d test)
     parser.add_argument("--inputFile", action="store", dest="inputFile")
     parser.add_argument("--outputDIR", action="store", dest="outputDIR")
+    parser.add_argument("--finalDIR", action="store", dest="finalDIR")
 
     args = parser.parse_args()
     main(args)
