@@ -141,10 +141,7 @@ def styleRaster(filename):
         # Get histograms stats
         nbins = hist.binCount
         minv = hist.minimum
-        if rasterlayer == 'maxele':
-            maxv = 5.0
-        else:
-            maxv = hist.maximum
+        maxv = hist.maximum
 
         # Create histogram array, bin array, and histogram index
         hista = np.array(hist.histogramVector)
