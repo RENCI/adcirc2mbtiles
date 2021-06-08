@@ -12,7 +12,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     else:
         logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
 
-    gdal2mbtiles_cmd = '/home/jmcmanus/Work/Surge/development/gdal2mbtiles/gdal2mbtiles.py'
+    gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
     tiffDIR = dirPath+'tiff'
     tiffFile = tiffDIR+'/'+inputFile
