@@ -149,8 +149,12 @@ def styleRaster(filename):
         index = np.where(hista > 5)
 
         # Get bottom and top color values from bin values
-        bottomcolor = bins[index[0][0]]
-        topcolor = bins[index[0][-1]]
+        if rasterlayer == 'maxele':
+            bottomcolor = 0.0
+            topcolor =  2.0
+        else:
+            bottomcolor = bins[index[0][0]]
+            topcolor = bins[index[0][-1]]
 
         # Calculate range value between the bottom and top color values
         if bottomcolor < 0:
