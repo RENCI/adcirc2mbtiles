@@ -56,8 +56,9 @@ def initialize_processing(app):
 def makeDIRS(outputDIR):
     # Create tiff directory path
     if not os.path.exists(outputDIR):
-        mode = 0o755
-        os.makedirs(outputDIR, mode)
+        # mode = 0o755
+        # os.makedirs(outputDIR, mode)
+        os.makedirs(outputDIR, exist_ok=True)
         logger.info('Made directory '+outputDIR.split('/')[-1]+ '.')
     else:
         logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
@@ -237,7 +238,8 @@ def moveRaw(inputFile, outputDIR, finalDIR):
     # Create final/tiff directory path
     if not os.path.exists(finalDIR):
         mode = 0o755
-        os.makedirs(finalDIR, mode)
+        # os.makedirs(finalDIR, mode)
+        os.makedirs(finalDIR, exist_ok=True)
         logger.info('Made directory '+finalDIR.split('/')[-1]+ '.')
     else:
         logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')

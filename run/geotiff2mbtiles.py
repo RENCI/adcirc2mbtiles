@@ -6,8 +6,9 @@ from subprocess import Popen, PIPE
 def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
     # Create mbtiles directory path
     if not os.path.exists(outputDIR):
-        mode = 0o755
-        os.makedirs(outputDIR, mode)
+        #mode = 0o755
+        #os.makedirs(outputDIR, mode)
+        os.makedirs(outputDIR, exist_ok=True)
         logger.info('Made directory '+outputDIR.split('/')[-1]+ '.')
     else:
         logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
@@ -46,8 +47,9 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
 
     # Create final directory path
     if not os.path.exists(finalDIR):
-        mode = 0o755
-        os.makedirs(finalDIR, mode)
+        # mode = 0o755
+        # os.makedirs(finalDIR, mode)
+        os.makedirs(finalDIR, exist_ok=True)
         logger.info('Made directory '+finalDIR.split('/')[-1]+ '.')
     else:
         logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
