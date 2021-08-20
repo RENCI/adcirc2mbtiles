@@ -61,14 +61,14 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
 def main(args):
     inputFile = args.inputFile 
 
-    if os.path.exists(inputFile):
-        zlstart = args.zlstart
-        zlstop = args.zlstop
-        cpu = args.cpu
-        outputDIR = args.outputDIR
-        finalDIR = args.finalDIR
-        #dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
+    zlstart = args.zlstart
+    zlstop = args.zlstop
+    cpu = args.cpu
+    outputDIR = args.outputDIR
+    finalDIR = args.finalDIR
+    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
+    if os.path.exists(dirPath+'tiff/'+inputFile):
         logger.remove()
         log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
         logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')

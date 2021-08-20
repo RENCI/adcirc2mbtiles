@@ -329,12 +329,12 @@ def create_colorbar(cmap,values,unit,barPathFile):
 def main(args):
     inputFile = args.inputFile
 
-    if os.path.exists(inputFile):
-        outputDIR = args.outputDIR
-        finalDIR = args.finalDIR
+    outputDIR = args.outputDIR
+    finalDIR = args.finalDIR
 
-        dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
+    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
+    if os.path.exists(dirPath+'input/'+inputFile):
         logger.remove()
         log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
         logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
