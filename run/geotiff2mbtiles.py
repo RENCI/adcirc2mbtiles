@@ -60,23 +60,28 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR):
 @logger.catch
 def main(args):
     inputFile = args.inputFile 
-    zlstart = args.zlstart
-    zlstop = args.zlstop
-    cpu = args.cpu
-    outputDIR = args.outputDIR
-    finalDIR = args.finalDIR
-    #dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    logger.remove()
-    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-    logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')
+    if os.path.exists(inputFile):
+        zlstart = args.zlstart
+        zlstop = args.zlstop
+        cpu = args.cpu
+        outputDIR = args.outputDIR
+        finalDIR = args.finalDIR
+        #dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    # When error exit program
-    logger.add(lambda _: sys.exit(1), level="ERROR")
+        logger.remove()
+        log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
+        logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')
 
-    logger.info('Create mbtiles file, with zoom levels '+zlstart+' to '+zlstop+', from '+inputFile.strip()+' tiff file '+inputFile+' using '+cpu+' CPUs.')
+        # When error exit program
+        logger.add(lambda _: sys.exit(1), level="ERROR")
 
-    geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR)
+        logger.info('Create mbtiles file, with zoom levels '+zlstart+' to '+zlstop+', from '+inputFile.strip()+' tiff file '+inputFile+' using '+cpu+' CPUs.')
+
+        geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR)
+
+    else:
+        sys.exit(inputFile+' does not exist')
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """

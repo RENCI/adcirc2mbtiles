@@ -328,63 +328,67 @@ def create_colorbar(cmap,values,unit,barPathFile):
 @logger.catch
 def main(args):
     inputFile = args.inputFile
-    outputDIR = args.outputDIR
-    finalDIR = args.finalDIR
 
-    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
+    if os.path.exists(inputFile):
+        outputDIR = args.outputDIR
+        finalDIR = args.finalDIR
 
-    logger.remove()
-    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-    logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
+        dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    # When error exit program
-    logger.add(lambda _: sys.exit(1), level="ERROR")
+        logger.remove()
+        log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
+        logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
 
-    makeDIRS(outputDIR.strip())
+        # When error exit program
+        logger.add(lambda _: sys.exit(1), level="ERROR")
 
-    os.environ['QT_QPA_PLATFORM']='offscreen'
-    xdg_runtime_dir = '/run/user/adcirc2geotiff'
-    os.makedirs(xdg_runtime_dir, exist_ok=True)
-    os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
-    logger.info('Set QGIS enviroment.')
+        makeDIRS(outputDIR.strip())
 
-    app = initialize_qgis_application() 
-    app.initQgis()
-    app, processing = initialize_processing(app)
-    logger.info('Initialzed QGIS.')
+        os.environ['QT_QPA_PLATFORM']='offscreen'
+        xdg_runtime_dir = '/run/user/adcirc2geotiff'
+        os.makedirs(xdg_runtime_dir, exist_ok=True)
+        os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
+        logger.info('Set QGIS enviroment.')
 
-    parameters = getParameters(dirPath, inputFile.strip(), outputDIR.strip())
-    logger.info('Got mesh regrid paramters for '+inputFile.strip())
+        app = initialize_qgis_application() 
+        app.initQgis()
+        app, processing = initialize_processing(app)
+        logger.info('Initialzed QGIS.')
 
-    filename = exportRaster(parameters)
-    valueList = styleRaster(filename)
+        parameters = getParameters(dirPath, inputFile.strip(), outputDIR.strip())
+        logger.info('Got mesh regrid paramters for '+inputFile.strip())
 
-    barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
-    barvar = filename.strip().split('/')[-1].split('.')[0]
+        filename = exportRaster(parameters)
+        valueList = styleRaster(filename)
 
-    if barvar == 'maxele':
-        hexList = ['#0000ff', '#00ffff', '#ffff00', '#ff0000']
-        unit = 'm'
-    elif barvar == 'maxwvel':
-        hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
-        unit = 'm'
-    elif barvar == 'swan_HS_max':
-        hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
-        unit = 'm s-1'
-    else:
-        logger.info('Incorrect rlayer name')
+        barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
+        barvar = filename.strip().split('/')[-1].split('.')[0]
 
-    cmap = get_continuous_cmap(hexList)
-    create_colorbar(cmap,valueList,unit,barPathFile)
+        if barvar == 'maxele':
+            hexList = ['#0000ff', '#00ffff', '#ffff00', '#ff0000']
+            unit = 'm'
+        elif barvar == 'maxwvel':
+            hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
+            unit = 'm'
+        elif barvar == 'swan_HS_max':
+            hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
+            unit = 'm s-1'
+        else:
+            logger.info('Incorrect rlayer name')
 
-    app.exitQgis()
-    logger.info('Quit QGIS')
+        cmap = get_continuous_cmap(hexList)
+        create_colorbar(cmap,valueList,unit,barPathFile)
 
-    moveRaw(inputFile, outputDIR, finalDIR)
-    logger.info('Moved float64 tiff file')
+        app.exitQgis()
+        logger.info('Quit QGIS')
 
-    moveBar(barPathFile, outputDIR, finalDIR)
-    logger.info('Moved colorbar png file')
+        moveRaw(inputFile, outputDIR, finalDIR)
+        logger.info('Moved float64 tiff file')
+
+        moveBar(barPathFile, outputDIR, finalDIR)
+        logger.info('Moved colorbar png file')
+     else:
+         sys.exit(inputFile+' does not exist')
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """

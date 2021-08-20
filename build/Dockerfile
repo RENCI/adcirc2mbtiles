@@ -24,7 +24,7 @@ LABEL version="1.0"
 LABEL description="adcirc2mbtiles image with Dockerfile."
 
 # update sources list, and install basic apps, one per line for better caching
-RUN apt-get clean && apt-get update &&\
+RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
     apt-get install -qy vim \
     libgl1 \
     libgl1-mesa-dev \
