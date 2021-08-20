@@ -387,7 +387,7 @@ def main(args):
 
         moveBar(barPathFile, outputDIR, finalDIR)
         logger.info('Moved colorbar png file')
-     else:
+    else:
          sys.exit(inputFile+' does not exist')
 
 if __name__ == "__main__":
