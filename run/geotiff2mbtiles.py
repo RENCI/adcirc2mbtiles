@@ -80,9 +80,9 @@ def main(args):
 
         geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR)
 
-    else:
+    #else:
         #sys.exit(inputFile+' does not exist')
-        sys.exit(0)
+        #sys.exit(0)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
