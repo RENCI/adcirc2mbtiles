@@ -5,6 +5,7 @@ from functools import wraps
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
+from PIL import Image
 
 from PyQt5.QtGui import QColor
 from qgis.core import (
@@ -307,23 +308,66 @@ def get_continuous_cmap(hex_list, float_list=None):
     cmp = LinearSegmentedColormap('my_cmp', segmentdata=cdict, N=256)
     return(cmp)
 
-def create_colorbar(cmap,values,unit,barPathFile):
-    """Plot a colormap with its grayscale equivalent"""
-    cmap = plt.cm.get_cmap(cmap)
-    colors = cmap(np.arange(cmap.N))
+def rotate_img(img_path, rt_degr):
+    '''
+    This function rotates the color bar image so it is horizontal
+    '''
+    img = Image.open(img_path)
+    return img.rotate(rt_degr, expand=1)
 
-    fig, ax = plt.subplots(1, figsize=(8, 4), subplot_kw=dict(xticks=[], yticks=[]))
-    ax.imshow([colors], extent=[0, 20, 0, 3])
-    ax.set_xticks([0,5,10,15,20])
+def create_colorbar(cmap,values,unit,barPathFile):
+    """Create tick marks for values in meters"""
     valrange = abs(values[0] - values[3])
-    tick1 = '<'+str("{:.2f}".format(values[0]))
-    tick2 = str("{:.2f}".format(valrange/4))
-    tick3 = str("{:.2f}".format(valrange/2))
-    tick4 = str("{:.2f}".format(valrange/1.33))
-    tick5 = str("{:.2f}".format(values[3]))+'>'
-    ax.set_xticklabels([tick1, tick2, tick3, tick4, tick5])
-    ax.set_xlabel(unit)
-    plt.savefig(barPathFile, transparent=True)
+
+    ticks = [values[0], valrange/4, valrange/2, valrange/1.33, values[3]]
+
+    tick1m = '<'+str("{:.2f}".format(ticks[0]))
+    tick2m = str("{:.2f}".format(ticks[1]))
+    tick3m = str("{:.2f}".format(ticks[2]))
+    tick4m = str("{:.2f}".format(ticks[3]))
+    tick5m = str("{:.2f}".format(ticks[4]))+'>'
+
+    ticks_labels = [tick1m,tick2m,tick3m,tick4m,tick5m]
+
+    """Get color map and plot range"""
+    cmap = plt.cm.get_cmap(cmap)
+    norm = mpl.colors.Normalize(vmin=values[0], vmax=values[3])
+
+    """Plot color bar and first axis"""
+    fig, ax = plt.subplots(figsize=(1, 8))
+    cbar = mpl.colorbar.ColorbarBase(ax, cmap=cmap, norm=norm, ticks=ticks, orientation='vertical')
+    cbar.ax.yaxis.set_label_position("left")
+    ax.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
+    cbar.set_label("m", fontsize=17)
+    cbar.ax.set_yticklabels(ticks_labels, rotation=90, va="center")
+
+    """Create tick marks for values in feet"""
+    valrangeft = valrange * 3.28084
+    iticks = [(values[0] * 3.28084), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[3] * 3.28084)]
+
+    tick1ft = '<'+str("{:.2f}".format(iticks[0]))
+    tick2ft = str("{:.2f}".format(iticks[1]))
+    tick3ft = str("{:.2f}".format(iticks[2]))
+    tick4ft = str("{:.2f}".format(iticks[3]))
+    tick5ft = str("{:.2f}".format(iticks[4]))+'>'
+
+    iticks_labels = [tick1ft,tick2ft,tick3ft,tick4ft,tick5ft]
+
+    """Plot second axis"""
+    ax2 = ax.twinx()
+    ax2.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
+    ax2.set_ylim([(values[0] * 3.28084),(values[3] * 3.28084)])
+    ax2.set_yticks(iticks)
+    ax2.set_yticklabels(iticks_labels, rotation=90, va="center")
+    ax2.set_ylabel("ft", fontsize=17)
+
+    """Save colorbar image and close plot"""
+    fig.savefig(barPathFile, transparent=True, bbox_inches = 'tight', pad_inches = 0.25)
+    plt.close()
+
+    """Rotate colorbar so it is horizontal"""
+    img_rt_270 = rotate_img(barPathFile, 270)
+    img_rt_270.save(barPathFile)
 
 @logger.catch
 def main(args):
