@@ -3,6 +3,7 @@ import os, sys, argparse, shutil, json, warnings
 from loguru import logger
 from functools import wraps
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from PIL import Image
