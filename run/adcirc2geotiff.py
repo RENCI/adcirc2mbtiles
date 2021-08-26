@@ -339,7 +339,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
     cbar = mpl.colorbar.ColorbarBase(ax, cmap=cmap, norm=norm, ticks=ticks, orientation='vertical')
     cbar.ax.yaxis.set_label_position("left")
     ax.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
-    cbar.set_label("m", fontsize=17)
+    cbar.set_label(unit, fontsize=17)
     cbar.ax.set_yticklabels(ticks_labels, rotation=90, va="center")
 
     """Create tick marks for values in feet"""
@@ -360,7 +360,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
     ax2.set_ylim([(values[0] * 3.28084),(values[3] * 3.28084)])
     ax2.set_yticks(iticks)
     ax2.set_yticklabels(iticks_labels, rotation=90, va="center")
-    ax2.set_ylabel("ft", fontsize=17)
+    ax2.set_ylabel("ft"+unit[1:], fontsize=17)
 
     """Save colorbar image and close plot"""
     fig.savefig(barPathFile, transparent=True, bbox_inches = 'tight', pad_inches = 0.25)
