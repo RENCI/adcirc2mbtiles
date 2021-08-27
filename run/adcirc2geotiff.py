@@ -154,7 +154,7 @@ def styleRaster(filename):
         # Get bottom and top color values from bin values
         if rasterlayer == 'maxele':
             bottomcolor = 0.0
-            topcolor =  2.0
+            topcolor =  5.0
         else:
             bottomcolor = bins[index[0][0]]
             topcolor = bins[index[0][-1]]
