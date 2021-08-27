@@ -343,8 +343,15 @@ def create_colorbar(cmap,values,unit,barPathFile):
     cbar.ax.set_yticklabels(ticks_labels, rotation=90, va="center")
 
     """Create tick marks for values in feet"""
-    valrangeft = valrange * 3.28084
-    iticks = [(values[0] * 3.28084), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[3] * 3.28084)]
+    if unit == 'meters per second':
+        econversionval = 2.23694
+        eunit = 'miles per hour'
+    else:
+        econversionval = 3.28084
+        eunit = 'feet'
+
+    valrangeft = valrange * econversionval
+    iticks = [(values[0] * econversionval), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[3] * econversionval)]
 
     tick1ft = '<'+str("{:.2f}".format(iticks[0]))
     tick2ft = str("{:.2f}".format(iticks[1]))
@@ -357,10 +364,10 @@ def create_colorbar(cmap,values,unit,barPathFile):
     """Plot second axis"""
     ax2 = ax.twinx()
     ax2.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
-    ax2.set_ylim([(values[0] * 3.28084),(values[3] * 3.28084)])
+    ax2.set_ylim([(values[0] * econversionval),(values[3] * econversionval)])
     ax2.set_yticks(iticks)
     ax2.set_yticklabels(iticks_labels, rotation=90, va="center")
-    ax2.set_ylabel("ft"+unit[1:], fontsize=17)
+    ax2.set_ylabel(eunit, fontsize=17)
 
     """Save colorbar image and close plot"""
     fig.savefig(barPathFile, transparent=True, bbox_inches = 'tight', pad_inches = 0.25)
@@ -411,13 +418,13 @@ def main(args):
 
         if barvar == 'maxele':
             hexList = ['#0000ff', '#00ffff', '#ffff00', '#ff0000']
-            unit = 'm'
+            unit = 'meters'
         elif barvar == 'maxwvel':
             hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
-            unit = 'm s-1'
+            unit = 'meters per second'
         elif barvar == 'swan_HS_max':
             hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
-            unit = 'm'
+            unit = 'meters'
         else:
             logger.info('Incorrect rlayer name')
 
