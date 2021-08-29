@@ -7,6 +7,7 @@ import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from PIL import Image
+from colour import Color
 
 from PyQt5.QtGui import QColor
 from qgis.core import (
@@ -123,7 +124,7 @@ def exportRaster(parameters):
 
 # Add color and set transparency to GeoTiff
 @ignore_warnings
-def styleRaster(filename):
+def styleRaster(filename, colorscaling):
     # Create outfile name
     outfile = "".join(filename.strip().split('.raw'))
 
@@ -151,45 +152,88 @@ def styleRaster(filename):
         bins = np.arange(minv, maxv, (maxv - minv)/nbins)
         index = np.where(hista > 5)
 
-        # Get bottom and top color values from bin values
-        if rasterlayer == 'maxele':
-            bottomcolor = 0.0
-            topcolor =  5.0
+        if colorscaling == 'interpolated':            
+            # Get bottom and top color values from bin values, calculate values for bottom middle, 
+            # and top middle color values, and create color dictionary
+            if rasterlayer == 'maxele':
+                bottomvalue = 0.0
+                topvalue =  5.0
+
+                # Calculate range value between the bottom and top color values
+                if bottomvalue < 0:
+                    vrange = topvalue + bottomvalue
+                else:
+                    vrange = topvalue - bottomvalue 
+
+                bottommiddle = vrange * 0.3333
+                topmiddle = vrange * 0.6667
+                colDic = {'bottomcolor':'#0000ff', 'bottommiddle':'#00ffff', 'topmiddle':'#ffff00', 'topcolor':'#ff0000'}
+            else:
+                bottomvalue = bins[index[0][0]]
+                topvalue = bins[index[0][-1]]
+
+                # Calculate range value between the bottom and top color values
+                if bottomvalue < 0:
+                    vrange = topvalue + bottomvalue
+                else:
+                    vrange = topvalue - bottomvalue 
+
+                bottommiddle = vrange * 0.375
+                topmiddle = vrange * 0.75
+                colDic = {'bottomcolor':'#000000', 'bottommiddle':'#ff0000', 'topmiddle':'#ffff00', 'topcolor':'#ffffff'}
+
+            # Create list of color values
+            valueList = [bottomvalue, bottommiddle, topmiddle, topvalue]
+
+            # Create color ramp function and add colors
+            fnc = QgsColorRampShader()
+            fnc.setColorRampType(QgsColorRampShader.Interpolated)
+            lst = [QgsColorRampShader.ColorRampItem(valueList[0], QColor(colDic['bottomcolor'])),\
+                   QgsColorRampShader.ColorRampItem(valueList[1], QColor(colDic['bottommiddle'])), \
+                   QgsColorRampShader.ColorRampItem(valueList[2], QColor(colDic['topmiddle'])), \
+                   QgsColorRampShader.ColorRampItem(valueList[3], QColor(colDic['topcolor']))]
+            fnc.setColorRampItemList(lst)
+
+        elif colorscaling == 'discrete':
+            # Calculate values for bottom middle, and top middle color values, and create color dictionary
+            if rasterlayer == 'maxele':
+                bottomvalue = 0.0
+                topvalue =  5.0
+                bottomcolor = Color('#0000ff')
+                topcolor = Color('#ff0000')
+                colorramp=list(bottomcolor.range_to(topcolor, 32))
+            else:
+                bottomvalue = bins[index[0][0]]
+                topvalue = bins[index[0][-1]]
+                bottomcolor = Color('#000000')
+                bottommiddle = Color('#ff0000')
+                topmiddle = Color('#ffff00')
+                topcolor = Color('#ffffff')
+                colorrampbottom=list(bottomcolor.range_to(bottommiddle, 11))
+                colorrampmmiddle=list(bottommiddle.range_to(topmiddle, 12))
+                colorramptop=list(topmiddle.range_to(topcolor, 11))
+                colorramp = colorrampbottom + colorrampmmiddle[1:-1] + colorramptop
+
+            # Calculate range value between the bottom and top color values
+            if bottomvalue < 0:
+                vrange = topvalue + bottomvalue
+            else:
+                vrange = topvalue - bottomvalue 
+
+            # Create list of color values and colorramp
+            valueList = np.arange(bottomvalue, topvalue, vrange/32)
+
+            # Create color ramp function and add colors
+            fnc = QgsColorRampShader()
+            fnc.setColorRampType(QgsColorRampShader.Discrete)
+            lst = []
+            for i in range(len(valueList)):
+                lst.append(QgsColorRampShader.ColorRampItem(valueList[i], QColor(colorramp[i].hex_l)))
+                
+            fnc.setColorRampItemList(lst)
+        
         else:
-            bottomcolor = bins[index[0][0]]
-            topcolor = bins[index[0][-1]]
-
-        # Calculate range value between the bottom and top color values
-        if bottomcolor < 0:
-            vrange = topcolor + bottomcolor
-        else:
-            vrange = topcolor - bottomcolor 
-
-        # Calculate values for bottom middle, and top middle color values
-        if rasterlayer == 'maxele':
-            bottommiddle = vrange * 0.3333
-            topmiddle = vrange * 0.6667
-        else:
-            bottommiddle = vrange * 0.375
-            topmiddle = vrange * 0.75
-
-        # Create list of color values
-        valueList =[bottomcolor, bottommiddle, topmiddle, topcolor]
-
-        # Create color dictionary
-        if rasterlayer == 'maxele':
-            colDic = {'bottomcolor':'#0000ff', 'bottommiddle':'#00ffff', 'topmiddle':'#ffff00', 'topcolor':'#ff0000'}
-        else:
-            colDic = {'bottomcolor':'#000000', 'bottommiddle':'#ff0000', 'topmiddle':'#ffff00', 'topcolor':'#ffffff'}
-
-        # Create color ramp function and add colors
-        fnc = QgsColorRampShader()
-        fnc.setColorRampType(QgsColorRampShader.Interpolated)
-        lst = [QgsColorRampShader.ColorRampItem(valueList[0], QColor(colDic['bottomcolor'])),\
-               QgsColorRampShader.ColorRampItem(valueList[1], QColor(colDic['bottommiddle'])), \
-               QgsColorRampShader.ColorRampItem(valueList[2], QColor(colDic['topmiddle'])), \
-               QgsColorRampShader.ColorRampItem(valueList[3], QColor(colDic['topcolor']))]
-        fnc.setColorRampItemList(lst)
+            sys.exit('Incorrect colorscaling value')
 
         # Create raster shader and add color ramp function
         shader = QgsRasterShader()
@@ -309,6 +353,32 @@ def get_continuous_cmap(hex_list, float_list=None):
     cmp = LinearSegmentedColormap('my_cmp', segmentdata=cdict, N=256)
     return(cmp)
 
+def get_discrete_cmap(valueList, hex_list, barvar):
+    if barvar == 'maxele':
+        bottomvalue = 0.0
+        topvalue =  5.0
+        bottomcolor = Color('#0000ff')
+        topcolor = Color('#ff0000')
+        colorramp=list(bottomcolor.range_to(topcolor, 32))
+    else:
+        bottomvalue = valueList[0]
+        topvalue = valueList[0]
+        bottomcolor = Color('#000000')
+        bottommiddle = Color('#ff0000')
+        topmiddle = Color('#ffff00')
+        topcolor = Color('#ffffff')
+        colorrampbottom=list(bottomcolor.range_to(bottommiddle, 11))
+        colorrampmmiddle=list(bottommiddle.range_to(topmiddle, 12))
+        colorramptop=list(topmiddle.range_to(topcolor, 11))
+        colorramp = colorrampbottom + colorrampmmiddle[1:-1] + colorramptop
+        
+    hexlist = []
+    for color in colorramp:
+        hexlist.append(color.hex_l)
+            
+    cmp = mpl.colors.ListedColormap(hexlist)
+    return cmp
+
 def rotate_img(img_path, rt_degr):
     '''
     This function rotates the color bar image so it is horizontal
@@ -411,7 +481,7 @@ def main(args):
         logger.info('Got mesh regrid paramters for '+inputFile.strip())
 
         filename = exportRaster(parameters)
-        valueList = styleRaster(filename)
+        valueList = styleRaster(filename, 'discrete')
 
         barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
         barvar = filename.strip().split('/')[-1].split('.')[0]
@@ -428,7 +498,8 @@ def main(args):
         else:
             logger.info('Incorrect rlayer name')
 
-        cmap = get_continuous_cmap(hexList)
+        cmap = get_discrete_cmap(valueList, hexList, barvar)
+        #cmap = get_continuous_cmap(hexList)
         create_colorbar(cmap,valueList,unit,barPathFile)
 
         app.exitQgis()
