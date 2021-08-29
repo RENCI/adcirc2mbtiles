@@ -157,7 +157,7 @@ def styleRaster(filename, colorscaling):
             # and top middle color values, and create color dictionary
             if rasterlayer == 'maxele':
                 bottomvalue = 0.0
-                topvalue =  5.0
+                topvalue =  2.0
 
                 # Calculate range value between the bottom and top color values
                 if bottomvalue < 0:
@@ -198,7 +198,7 @@ def styleRaster(filename, colorscaling):
             # Calculate values for bottom middle, and top middle color values, and create color dictionary
             if rasterlayer == 'maxele':
                 bottomvalue = 0.0
-                topvalue =  5.0
+                topvalue =  2.0
                 bottomcolor = Color('#0000ff')
                 topcolor = Color('#ff0000')
                 colorramp=list(bottomcolor.range_to(topcolor, 32))
@@ -221,7 +221,7 @@ def styleRaster(filename, colorscaling):
                 vrange = topvalue - bottomvalue 
 
             # Create list of color values and colorramp
-            valueList = np.arange(bottomvalue, topvalue, vrange/32)
+            valueList = np.append(np.arange(bottomvalue, topvalue, vrange/31), topvalue)
 
             # Create color ramp function and add colors
             fnc = QgsColorRampShader()
@@ -356,7 +356,7 @@ def get_continuous_cmap(hex_list, float_list=None):
 def get_discrete_cmap(valueList, hex_list, barvar):
     if barvar == 'maxele':
         bottomvalue = 0.0
-        topvalue =  5.0
+        topvalue =  2.0
         bottomcolor = Color('#0000ff')
         topcolor = Color('#ff0000')
         colorramp=list(bottomcolor.range_to(topcolor, 32))
@@ -388,9 +388,9 @@ def rotate_img(img_path, rt_degr):
 
 def create_colorbar(cmap,values,unit,barPathFile):
     """Create tick marks for values in meters"""
-    valrange = abs(values[0] - values[3])
+    valrange = abs(values[0] - values[-1])
 
-    ticks = [values[0], valrange/4, valrange/2, valrange/1.33, values[3]]
+    ticks = [values[0], valrange/4, valrange/2, valrange/1.33, values[-1]]
 
     tick1m = '<'+str("{:.2f}".format(ticks[0]))
     tick2m = str("{:.2f}".format(ticks[1]))
@@ -402,7 +402,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
 
     """Get color map and plot range"""
     cmap = plt.cm.get_cmap(cmap)
-    norm = mpl.colors.Normalize(vmin=values[0], vmax=values[3])
+    norm = mpl.colors.Normalize(vmin=values[0], vmax=values[-1])
 
     """Plot color bar and first axis"""
     fig, ax = plt.subplots(figsize=(1, 8))
@@ -421,7 +421,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
         eunit = 'feet'
 
     valrangeft = valrange * econversionval
-    iticks = [(values[0] * econversionval), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[3] * econversionval)]
+    iticks = [(values[0] * econversionval), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[-1] * econversionval)]
 
     tick1ft = '<'+str("{:.2f}".format(iticks[0]))
     tick2ft = str("{:.2f}".format(iticks[1]))
@@ -434,7 +434,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
     """Plot second axis"""
     ax2 = ax.twinx()
     ax2.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
-    ax2.set_ylim([(values[0] * econversionval),(values[3] * econversionval)])
+    ax2.set_ylim([(values[0] * econversionval),(values[-1] * econversionval)])
     ax2.set_yticks(iticks)
     ax2.set_yticklabels(iticks_labels, rotation=90, va="center")
     ax2.set_ylabel(eunit, fontsize=17)
