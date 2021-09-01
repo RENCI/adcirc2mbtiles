@@ -353,7 +353,7 @@ def get_continuous_cmap(hex_list, float_list=None):
     cmp = LinearSegmentedColormap('my_cmp', segmentdata=cdict, N=256)
     return(cmp)
 
-def get_discrete_cmap(valueList, hex_list, barvar):
+def get_discrete_cmap(valueList, barvar):
     if barvar == 'maxele':
         bottomvalue = 0.0
         topvalue =  2.0
@@ -498,7 +498,7 @@ def main(args):
         else:
             logger.info('Incorrect rlayer name')
 
-        cmap = get_discrete_cmap(valueList, hexList, barvar)
+        cmap = get_discrete_cmap(valueList, barvar)
         #cmap = get_continuous_cmap(hexList)
         create_colorbar(cmap,valueList,unit,barPathFile)
 
