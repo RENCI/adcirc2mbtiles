@@ -1,2 +1,4 @@
 #!/bin/bash
-docker build -t adcirc2mbtiles:latest .
+version=$1;
+
+docker build -t adcirc2mbtiles:$version .
