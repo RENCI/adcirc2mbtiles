@@ -227,6 +227,7 @@ def styleRaster(filename, colorscaling):
             fnc = QgsColorRampShader()
             fnc.setColorRampType(QgsColorRampShader.Discrete)
             lst = []
+            logger.info('Check valueList '+str(len(valueList))+' and colorramp '+str(len(colorramp))+' length ')
             for i in range(len(valueList)):
                 lst.append(QgsColorRampShader.ColorRampItem(valueList[i], QColor(colorramp[i].hex_l)))
                 
