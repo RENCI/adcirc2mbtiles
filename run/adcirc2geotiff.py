@@ -169,7 +169,8 @@ def styleRaster(filename, colorscaling):
                 topmiddle = vrange * 0.6667
                 colDic = {'bottomcolor':'#0000ff', 'bottommiddle':'#00ffff', 'topmiddle':'#ffff00', 'topcolor':'#ff0000'}
             else:
-                bottomvalue = bins[index[0][0]]
+                #bottomvalue = bins[index[0][0]]
+                bottomvalue = 0.0
                 topvalue = bins[index[0][-1]]
 
                 # Calculate range value between the bottom and top color values
@@ -203,7 +204,7 @@ def styleRaster(filename, colorscaling):
                 topcolor = Color('#ff0000')
                 colorramp=list(bottomcolor.range_to(topcolor, 32))
             else:
-                bottomvalue = bins[index[0][0]]
+                bottomvalue = 0.0
                 topvalue = bins[index[0][-1]]
                 bottomcolor = Color('#000000')
                 bottommiddle = Color('#ff0000')
@@ -214,14 +215,8 @@ def styleRaster(filename, colorscaling):
                 colorramptop=list(topmiddle.range_to(topcolor, 11))
                 colorramp = colorrampbottom + colorrampmmiddle[1:-1] + colorramptop
 
-            # Calculate range value between the bottom and top color values
-            if bottomvalue < 0:
-                vrange = topvalue + bottomvalue
-            else:
-                vrange = topvalue - bottomvalue 
-
             # Create list of color values and colorramp
-            valueList = np.append(np.arange(bottomvalue, topvalue, vrange/31), topvalue)
+            valueList = np.arange(bottomvalue, topvalue, topvalue/32)
 
             # Create color ramp function and add colors
             fnc = QgsColorRampShader()
