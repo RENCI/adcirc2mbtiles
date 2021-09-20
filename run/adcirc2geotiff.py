@@ -169,8 +169,7 @@ def styleRaster(filename, colorscaling):
                 topmiddle = vrange * 0.6667
                 colDic = {'bottomcolor':'#0000ff', 'bottommiddle':'#00ffff', 'topmiddle':'#ffff00', 'topcolor':'#ff0000'}
             else:
-                #bottomvalue = bins[index[0][0]]
-                bottomvalue = 0.0
+                bottomvalue = bins[index[0][0]]
                 topvalue = bins[index[0][-1]]
 
                 # Calculate range value between the bottom and top color values
@@ -226,7 +225,7 @@ def styleRaster(filename, colorscaling):
             fnc = QgsColorRampShader()
             fnc.setColorRampType(QgsColorRampShader.Discrete)
             lst = []
-	    lst.append(QgsColorRampShader.ColorRampItem(minv, QColor(colorramp[0].hex_l)))
+            lst.append(QgsColorRampShader.ColorRampItem(minv, QColor(colorramp[0].hex_l)))
             logger.info('Check valueList '+str(len(valueList))+' and colorramp '+str(len(colorramp))+' length ')
             for i in range(len(valueList)):
                 lst.append(QgsColorRampShader.ColorRampItem(valueList[i], QColor(colorramp[i].hex_l)))
