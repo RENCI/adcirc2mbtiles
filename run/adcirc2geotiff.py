@@ -203,6 +203,10 @@ def styleRaster(filename, colorscaling):
                 bottomcolor = Color('#0000ff')
                 topcolor = Color('#ff0000')
                 colorramp=list(bottomcolor.range_to(topcolor, 32))
+		
+                # Create list of color values and colorramp
+                valueList = np.append(np.arange(bottomvalue, topvalue, topvalue/31), topvalue)
+
             else:
                 bottomvalue = 0.0
                 topvalue = bins[index[0][-1]]
@@ -215,17 +219,19 @@ def styleRaster(filename, colorscaling):
                 colorramptop=list(topmiddle.range_to(topcolor, 11))
                 colorramp = colorrampbottom + colorrampmmiddle[1:-1] + colorramptop
 
-            # Create list of color values and colorramp
-            valueList = np.arange(bottomvalue, topvalue, topvalue/32)
+                # Create list of color values and colorramp
+                valueList = np.arange(bottomvalue, topvalue, topvalue/32)
 
             # Create color ramp function and add colors
             fnc = QgsColorRampShader()
             fnc.setColorRampType(QgsColorRampShader.Discrete)
             lst = []
+	    lst.append(QgsColorRampShader.ColorRampItem(minv, QColor(colorramp[0].hex_l)))
             logger.info('Check valueList '+str(len(valueList))+' and colorramp '+str(len(colorramp))+' length ')
             for i in range(len(valueList)):
                 lst.append(QgsColorRampShader.ColorRampItem(valueList[i], QColor(colorramp[i].hex_l)))
                 
+            lst.append(QgsColorRampShader.ColorRampItem(maxv, QColor(colorramp[-1].hex_l)))
             fnc.setColorRampItemList(lst)
         
         else:
