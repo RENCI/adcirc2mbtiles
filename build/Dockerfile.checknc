@@ -45,7 +45,7 @@ RUN mkdir /repos
 WORKDIR /repos
 
 # get the repos
-RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
+RUN git clone --branch checknc https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
 # change to the run directory                        
