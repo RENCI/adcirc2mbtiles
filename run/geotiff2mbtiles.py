@@ -68,11 +68,11 @@ def main(args):
     finalDIR = args.finalDIR
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    if os.path.exists(dirPath+'tiff/'+inputFile):
-        logger.remove()
-        log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-        logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')
+    logger.remove()
+    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
+    logger.add(log_path+'/geotiff2mbtiles-logs.log', level='DEBUG')
 
+    if os.path.exists(dirPath+'tiff/'+inputFile):
         # When error exit program
         logger.add(lambda _: sys.exit(1), level="ERROR")
 
@@ -80,9 +80,9 @@ def main(args):
 
         geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, outputDIR, finalDIR)
 
-    #else:
-        #sys.exit(inputFile+' does not exist')
-        #sys.exit(0)
+    else:
+        logger.info(inputFile+' does not exist')
+        sys.exit(0)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """

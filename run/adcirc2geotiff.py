@@ -8,6 +8,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from PIL import Image
 from colour import Color
+import netCDF4 as nc
 
 from PyQt5.QtGui import QColor
 from qgis.core import (
@@ -79,6 +80,12 @@ def exportRaster(parameters):
     meshfile = inputFile.strip().split('/')[-1]
     meshlayer = meshfile.split('.')[0]
     layer = QgsMeshLayer(inputFile, meshlayer, 'mdal')
+
+    ds = nc.Dataset(parameters['INPUT_LAYER'])
+    for dim in ds.dimensions.values():
+        if dim.size == 0:
+            logger.info('The netCDF file '+meshfile.split('"')[0]+' has an invalid dimension value of 0, so the program will exit')
+            sys.exit(0)
 
     # Check if layer is valid
     if layer.isValid() is True:
@@ -457,11 +464,11 @@ def main(args):
 
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    if os.path.exists(dirPath+'input/'+inputFile):
-        logger.remove()
-        log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-        logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
+    logger.remove()
+    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
+    logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
 
+    if os.path.exists(dirPath+'input/'+inputFile):
         # When error exit program
         logger.add(lambda _: sys.exit(1), level="ERROR")
 
@@ -511,9 +518,9 @@ def main(args):
 
         moveBar(barPathFile, outputDIR, finalDIR)
         logger.info('Moved colorbar png file')
-    #else:
-         #sys.exit(inputFile+' does not exist')
-         #sys.exit(0)
+    else:
+         logger.info(inputFile+' does not exist')
+         sys.exit(0)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
