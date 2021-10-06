@@ -464,11 +464,11 @@ def main(args):
 
     dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
 
-    if os.path.exists(dirPath+'input/'+inputFile):
-        logger.remove()
-        log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-        logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
+    logger.remove()
+    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
+    logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
 
+    if os.path.exists(dirPath+'input/'+inputFile):
         # When error exit program
         logger.add(lambda _: sys.exit(1), level="ERROR")
 
