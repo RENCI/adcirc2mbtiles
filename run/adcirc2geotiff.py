@@ -350,8 +350,13 @@ def moveRaw(inputFile, outputDir, finalDir):
     tifRaw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
     # Check if raw tiff exists, and move it.
     if os.path.exists(outputDir+tifRaw):
+        if os.path.exists(outputDir+tifRaw+'.aux.xml'):
+            os.remove(outputDir+tifRaw+'.aux.xml')
+            logger.info('Remove aux.xml file.')
+        else:
+            logger.info('No aux.xml file to remove.')
+
         shutil.move(outputDir+tifRaw, finalDir+tifRaw)
-        os.remove(outputDir+tifRaw+'.aux.xml')
         logger.info('Moved raw tiff file '+tifRaw+ 'to final/tiff directory.')
     else:
         logger.info('Raw tiff file '+tifRaw+' does not exist.')
