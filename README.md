@@ -21,11 +21,11 @@ Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file. Th
 
   Now you can run the command to create a tiff:
 
-    python adcirc2geotiff.py --inputFile maxwvel.63.nc --outputDIR /data/sj37392jdj28538/tiff --finalDIR /data/sj37392jdj28538/final/tiff
+    python adcirc2geotiff.py --inputFile maxwvel.63.nc --inputDIR /data/sj37392jdj28538/input  --outputDIR /data/sj37392jdj28538/tiff --finalDIR /data/sj37392jdj28538/final/tiff
 
   and the command to create the mbtiles file:
 
-    python geotiff2mbtiles.py --inputFile maxwvel.63.tif --zlstart 0 --zlstop 9 --cpu 6 --outputDIR /data/sj37392jdj28538/mbtiles --finalDIR /data/sj37392jdj28538/final/mbtiles
+    python geotiff2mbtiles.py --inputFile maxwvel.63.tif --zlstart 0 --zlstop 9 --cpu 6 --inputDIR /data/sj37392jdj28538/tiff --outputDIR /data/sj37392jdj28538/mbtiles --finalDIR /data/sj37392jdj28538/final/mbtiles
 
 ## Running in Kubernetes
 

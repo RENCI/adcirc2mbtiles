@@ -1,15 +1,18 @@
 #!/usr/bin/env python
+# Import Python modules
 import os, sys, argparse, shutil, json, warnings
-from loguru import logger
-from functools import wraps
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
+import netCDF4 as nc
+from pathlib import Path
+from loguru import logger
+from functools import wraps
+from matplotlib.colors import LinearSegmentedColormap
 from PIL import Image
 from colour import Color
-import netCDF4 as nc
 
+# Import QGIS modules
 from PyQt5.QtGui import QColor
 from qgis.core import (
     Qgis,
@@ -57,30 +60,35 @@ def initialize_processing(app):
     Processing.initialize()
     return (app, processing)
 
-def makeDIRS(outputDIR):
+# Make output directory if it does not exist
+def makeDirs(outputDir):
     # Create tiff directory path
-    if not os.path.exists(outputDIR):
+    if not os.path.exists(outputDir):
         # mode = 0o755
-        # os.makedirs(outputDIR, mode)
-        os.makedirs(outputDIR, exist_ok=True)
-        logger.info('Made directory '+outputDIR.split('/')[-1]+ '.')
+        # os.makedirs(outputDir, mode)
+        os.makedirs(outputDir, exist_ok=True)
+        logger.info('Made directory '+Path(outputDir).parts[-1]+ '.')
     else:
-        logger.info('Directory '+outputDIR.split('/')[-1]+' already made.')
+        logger.info('Directory '+Path(outputDir).parts[-1]+' already made.')
 
-def getParameters(dirPath, inputFile, outputDIR):
-    tiffile = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
-    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+dirPath+'input/'+inputFile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDIR+'/'+tiffile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
+# Define parameters used in creating tiff
+def getParameters(inputDir, inputFile, outputDir):
+    tifFile = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
+    parms = '{"INPUT_EXTENT" : "-97.85833,-60.040029999999994,7.909559999999999,45.83612", "INPUT_GROUP" : 1, "INPUT_LAYER" : "'+inputDir+inputFile+'", "INPUT_TIMESTEP" : 0,  "OUTPUT_RASTER" : "'+outputDir+tifFile+'", "MAP_UNITS_PER_PIXEL" : 0.001}'
     return(json.loads(parms))
 
 # Convert mesh layer as raster and save as a GeoTiff
 @ignore_warnings
 def exportRaster(parameters):
-    # Open layer from inputFile 
+    # Open layer from INPUT_LAYER 
+    logger.info('Open layer from INPUT_LAYER') 
     inputFile = 'Ugrid:'+'"'+parameters['INPUT_LAYER']+'"'
-    meshfile = inputFile.strip().split('/')[-1]
+    meshfile = Path(inputFile).parts[-1]
     meshlayer = meshfile.split('.')[0]
     layer = QgsMeshLayer(inputFile, meshlayer, 'mdal')
 
+    # Open INPUT_LAYER with netCDF4, and check its dimensions. If dimensions are incorrect exit program
+    logger.info('Check INPUT_LAYER dimensions')
     ds = nc.Dataset(parameters['INPUT_LAYER'])
     for dim in ds.dimensions.values():
         if dim.size == 0:
@@ -90,6 +98,7 @@ def exportRaster(parameters):
     # Check if layer is valid
     if layer.isValid() is True:
         # Get parameters for processing
+        logger.info('Get parameters')
         dataset  = parameters['INPUT_GROUP'] 
         timestep = parameters['INPUT_TIMESTEP']
         mupp = parameters['MAP_UNITS_PER_PIXEL'] 
@@ -99,30 +108,38 @@ def exportRaster(parameters):
         height = extent.height()/mupp 
         crs = layer.crs() 
         crs.createFromSrid(4326)
+
+        # Transform instance
+        logger.info('Transform instance')
         transform_context = QgsProject.instance().transformContext()
         output_format = QgsRasterFileWriter.driverForExtension(os.path.splitext(output_layer)[1])
 
         # Open output file for writing
+        logger.info('Open output file')
         rfw = QgsRasterFileWriter(output_layer)
         rfw.setOutputProviderKey('gdal') 
         rfw.setOutputFormat(output_format) 
 
         # Create one band raster
+        logger.info('Create one band raster')
         rdp = rfw.createOneBandRaster( Qgis.Float64, width, height, extent, crs)
 
         # Get dataset index
+        logger.info('Get data set index')
         dataset_index = QgsMeshDatasetIndex(dataset, timestep)
 
         # Regred mesh layer to raster
+        logger.info('Regrid mesh layer')
         block = QgsMeshUtils.exportRasterBlock( layer, dataset_index, crs,
                 transform_context, mupp, extent) 
 
         # Write raster to GeoTiff file
+        logger.info('Write raster Geotiff file')
         rdp.writeBlock(block, 1)
         rdp.setNoDataValue(1, block.noDataValue())
         rdp.setEditable(False)
 
-        logger.info('Regridded mesh data in '+meshfile.split('"')[0]+' to float64 grid, and saved to tiff ('+output_layer.split('/')[-1]+') file.')
+        logger.info('Regridded mesh data in '+meshfile.split('"')[0]+' to float64 grid, and saved to tiff ('+Path(output_layer).parts[-1]+') file.')
 
         return(output_layer)
 
@@ -136,32 +153,21 @@ def styleRaster(filename, colorscaling):
     outfile = "".join(filename.strip().split('.raw'))
 
     # Open layer from filename
-    rasterfile = filename.strip().split('/')[-1]
+    logger.info('Open layer for styling')
+    rasterfile = Path(filename).parts[-1].strip()
     rasterlayer = rasterfile.split('.')[0]
     rlayer = QgsRasterLayer(filename, rasterlayer, 'gdal')
 
     # Check if layer is valid
     if rlayer.isValid() is True:
         # Get layer data provider
+        logger.info('Layer is valid for styling')
         provider = rlayer.dataProvider()
-
-        # Calculate histrogram
-        provider.initHistogram(QgsRasterHistogram(),1,100)
-        hist = provider.histogram(1)
-
-        # Get histograms stats
-        nbins = hist.binCount
-        minv = hist.minimum
-        maxv = hist.maximum
-
-        # Create histogram array, bin array, and histogram index
-        hista = np.array(hist.histogramVector)
-        bins = np.arange(minv, maxv, (maxv - minv)/nbins)
-        index = np.where(hista > 5)
 
         if colorscaling == 'interpolated':            
             # Get bottom and top color values from bin values, calculate values for bottom middle, 
             # and top middle color values, and create color dictionary
+            logger.info('Get interpolated color values, used for styling')
             if rasterlayer == 'maxele':
                 bottomvalue = 0.0
                 topvalue =  2.0
@@ -176,6 +182,21 @@ def styleRaster(filename, colorscaling):
                 topmiddle = vrange * 0.6667
                 colDic = {'bottomcolor':'#0000ff', 'bottommiddle':'#00ffff', 'topmiddle':'#ffff00', 'topcolor':'#ff0000'}
             else:
+                # Calculate histrogram
+                logger.info('Calculate histogram')
+                provider.initHistogram(QgsRasterHistogram(),1,100)
+                hist = provider.histogram(1)
+
+                # Get histograms stats
+                nbins = hist.binCount
+                minv = hist.minimum
+                maxv = hist.maximum
+
+                # Create histogram array, bin array, and histogram index
+                hista = np.array(hist.histogramVector)
+                bins = np.arange(minv, maxv, (maxv - minv)/nbins)
+                index = np.where(hista > 5)
+
                 bottomvalue = bins[index[0][0]]
                 topvalue = bins[index[0][-1]]
 
@@ -193,6 +214,7 @@ def styleRaster(filename, colorscaling):
             valueList = [bottomvalue, bottommiddle, topmiddle, topvalue]
 
             # Create color ramp function and add colors
+            logger.info('Create interpolated color ramp')
             fnc = QgsColorRampShader()
             fnc.setColorRampType(QgsColorRampShader.Interpolated)
             lst = [QgsColorRampShader.ColorRampItem(valueList[0], QColor(colDic['bottomcolor'])),\
@@ -203,7 +225,11 @@ def styleRaster(filename, colorscaling):
 
         elif colorscaling == 'discrete':
             # Calculate values for bottom middle, and top middle color values, and create color dictionary
+            logger.info('Get descrete color values, used for styling')
             if rasterlayer == 'maxele':
+                # Defind color values
+                minv = 0.0
+                maxv = 2.0
                 bottomvalue = 0.0
                 topvalue =  2.0
                 bottomcolor = Color('#0000ff')
@@ -214,6 +240,22 @@ def styleRaster(filename, colorscaling):
                 valueList = np.append(np.arange(bottomvalue, topvalue, topvalue/31), topvalue)
 
             else:
+                # Calculate histrogram
+                logger.info('Calculate histogram')
+                provider.initHistogram(QgsRasterHistogram(),1,100)
+                hist = provider.histogram(1)
+
+                # Get histograms stats
+                nbins = hist.binCount
+                minv = hist.minimum
+                maxv = hist.maximum
+
+                # Create histogram array, bin array, and histogram index
+                hista = np.array(hist.histogramVector)
+                bins = np.arange(minv, maxv, (maxv - minv)/nbins)
+                index = np.where(hista > 5)
+
+                # Define color values
                 bottomvalue = 0.0
                 topvalue = bins[index[0][-1]]
                 bottomcolor = Color('#000000')
@@ -229,6 +271,7 @@ def styleRaster(filename, colorscaling):
                 valueList = np.arange(bottomvalue, topvalue, topvalue/32)
 
             # Create color ramp function and add colors
+            logger.info('Create descrete color ramp')
             fnc = QgsColorRampShader()
             fnc.setColorRampType(QgsColorRampShader.Discrete)
             lst = []
@@ -241,9 +284,11 @@ def styleRaster(filename, colorscaling):
             fnc.setColorRampItemList(lst)
         
         else:
+            logger.info('Incorrect colorscaling value')
             sys.exit('Incorrect colorscaling value')
 
         # Create raster shader and add color ramp function
+        logger.info('Create raster shader, add color ramp function')
         shader = QgsRasterShader()
         shader.setRasterShaderFunction(fnc)
 
@@ -255,6 +300,7 @@ def styleRaster(filename, colorscaling):
         output_format = QgsRasterFileWriter.driverForExtension(os.path.splitext(outfile)[1])
 
         # Open output file for writing
+        logger.info('Open output file, add crs, and create raster pipe')
         rfw = QgsRasterFileWriter(outfile)
         rfw.setOutputProviderKey('gdal')
         rfw.setOutputFormat(output_format)
@@ -269,6 +315,7 @@ def styleRaster(filename, colorscaling):
         pipe.set(renderer.clone())
 
         # Get transform context
+        logger.info('Get transform context, and write file')
         transform_context = QgsProject.instance().transformContext()
 
         # Write to file
@@ -281,61 +328,69 @@ def styleRaster(filename, colorscaling):
             transform_context
         )
 
-        logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+outfile.split('/')[-1]+') file')
+        logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+Path(outfile).parts[-1]+') file')
 
     if not rlayer.isValid():
+        logger.info('Invalid raster')
         raise Exception('Invalid raster')
 
     return(valueList)
 
-def moveRaw(inputFile, outputDIR, finalDIR):
-    # Create final/tiff directory path
-    if not os.path.exists(finalDIR):
+# Move raw tiff to final tiff directory
+def moveRaw(inputFile, outputDir, finalDir):
+    # Create final/tiff directory path if it does not exist
+    if not os.path.exists(finalDir):
         mode = 0o755
-        # os.makedirs(finalDIR, mode)
-        os.makedirs(finalDIR, exist_ok=True)
-        logger.info('Made directory '+finalDIR.split('/')[-1]+ '.')
+        # os.makedirs(finalDir, mode)
+        os.makedirs(finalDir, exist_ok=True)
+        logger.info('Made directory '+Path(finalDir).parts[-1]+ '.')
     else:
-        logger.info('Directory '+finalDIR.split('/')[-1]+' already made.')
+        logger.info('Directory '+Path(finalDir).parts[-1]+' already made.')
 
-    tiffraw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
+    tifRaw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
     # Check if raw tiff exists, and move it.
-    if os.path.exists(outputDIR+'/'+tiffraw):
-        shutil.move(outputDIR+'/'+tiffraw, finalDIR+'/'+tiffraw)
-        os.remove(outputDIR+'/'+tiffraw+'.aux.xml')
-        logger.info('Moved raw tiff file '+tiffraw+ 'to final/tiff directory.')
+    if os.path.exists(outputDir+tifRaw):
+        shutil.move(outputDir+tifRaw, finalDir+tifRaw)
+        os.remove(outputDir+tifRaw+'.aux.xml')
+        logger.info('Moved raw tiff file '+tifRaw+ 'to final/tiff directory.')
     else:
-        logger.info('Raw tiff file '+rawtiff+' does not exist.')
+        logger.info('Raw tiff file '+tifRaw+' does not exist.')
 
-def moveBar(barPathFile, outputDIR, finalDIR):
-    barFile = barPathFile.split('/')[-1]
+# Move colorbar to final tiff directory
+def moveBar(barPathFile, outputDir, finalDir):
+    barFile = Path(barPathFile).parts[-1]
     # Check if raw tiff exists, and move it.
     if os.path.exists(barPathFile):
-        shutil.move(barPathFile, finalDIR+'/'+barFile)
+        shutil.move(barPathFile, finalDir+barFile)
         logger.info('Moved colorbar file '+barFile+ 'to final/tiff directory.')
     else:
         logger.info('Colorbar file '+barFile+' does not exist.')
 
+# Convert hex to rgb colors
 def hex_to_rgb(value):
     '''
     Converts hex to rgb colours
     value: string of 6 characters representing a hex colour.
-    Returns: list length 3 of RGB values'''
+    Returns: list length 3 of RGB values
+    '''
+    logger.info('Convert hex to rgb')
     value = value.strip("#") # removes hash symbol if present
     lv = len(value)
     return(tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)))
 
-
+# Convert rgb to decimal colors
 def rgb_to_dec(value):
     '''
     Converts rgb to decimal colours (i.e. divides each value by 256)
     value: list (length 3) of RGB values
-    Returns: list (length 3) of decimal values'''
+    Returns: list (length 3) of decimal values
+    '''
+    logger.info('Conver rgb to decimal')
     return([v/256 for v in value])
 
+# Create continuous color map
 def get_continuous_cmap(hex_list, float_list=None):
     '''
-    creates and returns a color map that can be used in heat map figures.
     If float_list is not provided, colour map graduates linearly between each color in hex_list.
     If float_list is provided, each color in hex_list is mapped to the respective location in float_list.
 
@@ -346,7 +401,9 @@ def get_continuous_cmap(hex_list, float_list=None):
 
     Returns
     ----------
-    colour map'''
+    colour map
+    '''
+    logger.info('Create continuous color map')
     rgb_list = [rgb_to_dec(hex_to_rgb(i)) for i in hex_list]
     if float_list:
         pass
@@ -361,8 +418,10 @@ def get_continuous_cmap(hex_list, float_list=None):
     cmp = LinearSegmentedColormap('my_cmp', segmentdata=cdict, N=256)
     return(cmp)
 
-def get_discrete_cmap(valueList, barvar):
-    if barvar == 'maxele':
+# Create discrete color map
+def get_discrete_cmap(valueList, barVar):
+    logger.info('Create discrete color map')
+    if barVar == 'maxele':
         bottomvalue = 0.0
         topvalue =  2.0
         bottomcolor = Color('#0000ff')
@@ -387,15 +446,17 @@ def get_discrete_cmap(valueList, barvar):
     cmp = mpl.colors.ListedColormap(hexlist)
     return cmp
 
+# Rotate color bar image
 def rotate_img(img_path, rt_degr):
-    '''
-    This function rotates the color bar image so it is horizontal
-    '''
+    # This function rotates the color bar image so it is horizontal
+    logger.info('Rotate color bar')
     img = Image.open(img_path)
     return img.rotate(rt_degr, expand=1)
 
+# Create color bar for tiff image
 def create_colorbar(cmap,values,unit,barPathFile):
-    """Create tick marks for values in meters"""
+    # Create tick marks for values in meters
+    logger.info('Create Color bar')
     valrange = abs(values[0] - values[-1])
 
     ticks = [values[0], valrange/4, valrange/2, valrange/1.33, values[-1]]
@@ -408,11 +469,11 @@ def create_colorbar(cmap,values,unit,barPathFile):
 
     ticks_labels = [tick1m,tick2m,tick3m,tick4m,tick5m]
 
-    """Get color map and plot range"""
+    # Get color map and plot range
     cmap = plt.cm.get_cmap(cmap)
     norm = mpl.colors.Normalize(vmin=values[0], vmax=values[-1])
 
-    """Plot color bar and first axis"""
+    # Plot color bar and first axis
     fig, ax = plt.subplots(figsize=(1, 8))
     cbar = mpl.colorbar.ColorbarBase(ax, cmap=cmap, norm=norm, ticks=ticks, orientation='vertical')
     cbar.ax.yaxis.set_label_position("left")
@@ -420,7 +481,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
     cbar.set_label(unit, fontsize=17)
     cbar.ax.set_yticklabels(ticks_labels, rotation=90, va="center")
 
-    """Create tick marks for values in feet"""
+    # Create tick marks for values in feet
     if unit == 'meters per second':
         econversionval = 2.23694
         eunit = 'miles per hour'
@@ -428,6 +489,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
         econversionval = 3.28084
         eunit = 'feet'
 
+    # Define value range in feet and convert ticks 
     valrangeft = valrange * econversionval
     iticks = [(values[0] * econversionval), valrangeft/4, valrangeft/2, valrangeft/1.33, (values[-1] * econversionval)]
 
@@ -439,7 +501,7 @@ def create_colorbar(cmap,values,unit,barPathFile):
 
     iticks_labels = [tick1ft,tick2ft,tick3ft,tick4ft,tick5ft]
 
-    """Plot second axis"""
+    # Plot second axis
     ax2 = ax.twinx()
     ax2.tick_params(direction='out', length=10, width=2, labelsize=17, colors='black', grid_color='black', grid_alpha=0.5)
     ax2.set_ylim([(values[0] * econversionval),(values[-1] * econversionval)])
@@ -447,76 +509,92 @@ def create_colorbar(cmap,values,unit,barPathFile):
     ax2.set_yticklabels(iticks_labels, rotation=90, va="center")
     ax2.set_ylabel(eunit, fontsize=17)
 
-    """Save colorbar image and close plot"""
+    # Save colorbar image and close plot
     fig.savefig(barPathFile, transparent=True, bbox_inches = 'tight', pad_inches = 0.25)
     plt.close()
 
-    """Rotate colorbar so it is horizontal"""
+    # Rotate colorbar so it is horizontal
     img_rt_270 = rotate_img(barPathFile, 270)
     img_rt_270.save(barPathFile)
 
 @logger.catch
 def main(args):
+    # get input variables from args
     inputFile = args.inputFile
+    inputDir = os.path.join(args.inputDir, '')
+    outputDir = os.path.join(args.outputDir, '')
+    finalDir = os.path.join(args.finalDir, '')
 
-    outputDIR = args.outputDIR
-    finalDIR = args.finalDIR
-
-    dirPath = "/".join(outputDIR.split('/')[0:-1])+'/'
-
+    # Remove old logger and start new one
     logger.remove()
-    log_path = os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs'))
-    logger.add(log_path+'/adcirc2geotiff-logs.log', level='DEBUG')
+    log_path = os.path.join(os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs')), '')
+    logger.add(log_path+'adcirc2geotiff_vmbtiles.log', level='DEBUG')
 
-    if os.path.exists(dirPath+'input/'+inputFile):
+    # Check to see if input directory exits and if it does create tiff
+    if os.path.exists(inputDir+inputFile):
         # When error exit program
         logger.add(lambda _: sys.exit(1), level="ERROR")
 
-        makeDIRS(outputDIR.strip())
+        # Make output directory
+        makeDirs(outputDir.strip())
 
+        # Set QGIS environment
         os.environ['QT_QPA_PLATFORM']='offscreen'
         xdg_runtime_dir = '/run/user/adcirc2geotiff'
         os.makedirs(xdg_runtime_dir, exist_ok=True)
         os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
         logger.info('Set QGIS enviroment.')
 
+        # Initialize QGIS
         app = initialize_qgis_application() 
         app.initQgis()
         app, processing = initialize_processing(app)
         logger.info('Initialzed QGIS.')
 
-        parameters = getParameters(dirPath, inputFile.strip(), outputDIR.strip())
+        # get parameters to create tiff from ADCIRC mesh file
+        parameters = getParameters(inputDir, inputFile.strip(), outputDir.strip())
         logger.info('Got mesh regrid paramters for '+inputFile.strip())
 
+        # Create raw tiff file
         filename = exportRaster(parameters)
+
+        # Create raw color file
         valueList = styleRaster(filename, 'discrete')
 
+        # Define color bar path and color bar variable name
         barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
-        barvar = filename.strip().split('/')[-1].split('.')[0]
+        barVar = Path(filename).parts[-1].strip().split('.')[0]
 
-        if barvar == 'maxele':
+        # Define hexList and units for each type of color bar variable 
+        if barVar == 'maxele':
             hexList = ['#0000ff', '#00ffff', '#ffff00', '#ff0000']
             unit = 'meters'
-        elif barvar == 'maxwvel':
+        elif barVar == 'maxwvel':
             hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
             unit = 'meters per second'
-        elif barvar == 'swan_HS_max':
+        elif barVar == 'swan_HS_max':
             hexList = ['#000000', '#ff0000', '#ffff00', '#ffffff']
             unit = 'meters'
         else:
             logger.info('Incorrect rlayer name')
 
-        cmap = get_discrete_cmap(valueList, barvar)
+        # Get color map
+        cmap = get_discrete_cmap(valueList, barVar)
         #cmap = get_continuous_cmap(hexList)
+
+        # Create color bar
         create_colorbar(cmap,valueList,unit,barPathFile)
 
+        # Quit QGIS
         app.exitQgis()
         logger.info('Quit QGIS')
 
-        moveRaw(inputFile, outputDIR, finalDIR)
+        # Move raw tiff file to final tiff directory
+        moveRaw(inputFile, outputDir, finalDir)
         logger.info('Moved float64 tiff file')
 
-        moveBar(barPathFile, outputDIR, finalDIR)
+        # Move color bar to final tiff directory 
+        moveBar(barPathFile, outputDir, finalDir)
         logger.info('Moved colorbar png file')
     else:
          logger.info(inputFile+' does not exist')
@@ -527,9 +605,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Optional argument which requires a parameter (eg. -d test)
-    parser.add_argument("--inputFile", action="store", dest="inputFile")
-    parser.add_argument("--outputDIR", action="store", dest="outputDIR")
-    parser.add_argument("--finalDIR", action="store", dest="finalDIR")
+    parser.add_argument("--inputFILE", "--inputFile", help="Input file name", action="store", dest="inputFile", required=True)
+    parser.add_argument("--inputDIR", "--inputDir", help="Input directory path", action="store", dest="inputDir", required=True)
+    parser.add_argument("--outputDIR", "--outputDir", help="Output directory path", action="store", dest="outputDir", required=True)
+    parser.add_argument("--finalDIR", "--finalDir", help="Final directory path", action="store", dest="finalDir", required=True)
 
     args = parser.parse_args()
     main(args)
