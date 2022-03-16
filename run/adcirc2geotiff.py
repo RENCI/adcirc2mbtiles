@@ -67,9 +67,9 @@ def makeDirs(outputDir):
         # mode = 0o755
         # os.makedirs(outputDir, mode)
         os.makedirs(outputDir, exist_ok=True)
-        logger.info('Made directory '+Path(outputDir).parts[-1]+ '.')
+        logger.info('Made directory '+outputDir+ '.')
     else:
-        logger.info('Directory '+Path(outputDir).parts[-1]+' already made.')
+        logger.info('Directory '+outputDir+' already made.')
 
 # Define parameters used in creating tiff
 def getParameters(inputDir, inputFile, outputDir):
@@ -139,7 +139,7 @@ def exportRaster(parameters):
         rdp.setNoDataValue(1, block.noDataValue())
         rdp.setEditable(False)
 
-        logger.info('Regridded mesh data in '+meshfile.split('"')[0]+' to float64 grid, and saved to tiff ('+Path(output_layer).parts[-1]+') file.')
+        logger.info('Regridded mesh data in '+meshfile.split('"')[0]+' to float64 grid, and saved to tiff ('+output_layer+') file.')
 
         return(output_layer)
 
@@ -328,7 +328,7 @@ def styleRaster(filename, colorscaling):
             transform_context
         )
 
-        logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+Path(outfile).parts[-1]+') file')
+        logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+outfile+') file')
 
     if not rlayer.isValid():
         logger.info('Invalid raster')
@@ -343,9 +343,9 @@ def moveRaw(inputFile, outputDir, finalDir):
         mode = 0o755
         # os.makedirs(finalDir, mode)
         os.makedirs(finalDir, exist_ok=True)
-        logger.info('Made directory '+Path(finalDir).parts[-1]+ '.')
+        logger.info('Made directory '+finalDir+ '.')
     else:
-        logger.info('Directory '+Path(finalDir).parts[-1]+' already made.')
+        logger.info('Directory '+finalDir+' already made.')
 
     tifRaw = inputFile.split('.')[0]+'.raw.'+inputFile.split('.')[1]+'.tif'
     # Check if raw tiff exists, and move it.
@@ -357,9 +357,9 @@ def moveRaw(inputFile, outputDir, finalDir):
             logger.info('No aux.xml file to remove.')
 
         shutil.move(outputDir+tifRaw, finalDir+tifRaw)
-        logger.info('Moved raw tiff file '+tifRaw+ 'to final/tiff directory.')
+        logger.info('Moved raw tiff file '+tifRaw+ 'to '+finalDir+' directory.')
     else:
-        logger.info('Raw tiff file '+tifRaw+' does not exist.')
+        logger.info('Raw tiff file '+finalDir+tifRaw+' does not exist.')
 
 # Move colorbar to final tiff directory
 def moveBar(barPathFile, outputDir, finalDir):
@@ -367,9 +367,9 @@ def moveBar(barPathFile, outputDir, finalDir):
     # Check if raw tiff exists, and move it.
     if os.path.exists(barPathFile):
         shutil.move(barPathFile, finalDir+barFile)
-        logger.info('Moved colorbar file '+barFile+ 'to final/tiff directory.')
+        logger.info('Moved colorbar file '+finalDir+barFile+ 'to final/tiff directory.')
     else:
-        logger.info('Colorbar file '+barFile+' does not exist.')
+        logger.info('Colorbar file '+finalDir+barFile+' does not exist.')
 
 # Convert hex to rgb colors
 def hex_to_rgb(value):
@@ -558,7 +558,7 @@ def main(args):
 
         # get parameters to create tiff from ADCIRC mesh file
         parameters = getParameters(inputDir, inputFile.strip(), outputDir.strip())
-        logger.info('Got mesh regrid paramters for '+inputFile.strip())
+        logger.info('Got mesh regrid paramters for '+inputDir+inputFile.strip())
 
         # Create raw tiff file
         filename = exportRaster(parameters)
@@ -602,7 +602,7 @@ def main(args):
         moveBar(barPathFile, outputDir, finalDir)
         logger.info('Moved colorbar png file')
     else:
-         logger.info(inputFile+' does not exist')
+         logger.info(inputDIR+inputFile+' does not exist')
          sys.exit(0)
 
 if __name__ == "__main__":
