@@ -17,7 +17,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, inputDir, outputDir, finalD
         logger.info('Directory '+Path(outputDir).parts[-1]+' already made.')
 
     # Define gdal2mbtiles command, and directory paths
-    gdal2mbtiles_cmd = '/repos/gdal2mbtiles/gdal2mbtiles.py'
+    gdal2mbtiles_cmd = '/home/nru/repos/gdal2mbtiles/gdal2mbtiles.py'
 
     # Combine start and stop zooms to be able to run in gdal2mbtiles command 
     diffzl = int(zlstop) - int(zlstart)
