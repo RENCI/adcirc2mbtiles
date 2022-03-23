@@ -34,22 +34,29 @@ RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
 RUN conda update conda && \
     conda config --add channels conda-forge
 
-WORKDIR /app
+RUN useradd -m -d /home/nru -u 1000 nru
+RUN chmod 777 /home/nru
+USER nru
+
+RUN mkdir /home/nru/app
+WORKDIR /home/nru/app
+RUN chmod 777 -R .
 
 # Create the environment, initialize conda in bash config files, and install repos:
 COPY environment.yml .
 RUN conda env create -f environment.yml
 
 # make d directory for the repos and go there
-RUN mkdir /repos
-WORKDIR /repos
+RUN mkdir /home/nru/repos
+WORKDIR /home/nru/repos
+RUN chmod 777 -R .
 
 # get the repos
 RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
 # change to the run directory                        
-WORKDIR /repos/adcirc2mbtiles/run
+WORKDIR /home/nru/repos/adcirc2mbtiles/run
 
 # set the python path
-ENV PYTHONPATH=/repos/adcirc2mbtiles
+ENV PYTHONPATH=/home/nru/repos/adcirc2mbtiles

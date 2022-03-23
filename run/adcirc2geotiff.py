@@ -545,7 +545,7 @@ def main(args):
 
         # Set QGIS environment
         os.environ['QT_QPA_PLATFORM']='offscreen'
-        xdg_runtime_dir = '/run/user/adcirc2geotiff'
+        xdg_runtime_dir = '/home/nru/adcirc2geotiff'
         os.makedirs(xdg_runtime_dir, exist_ok=True)
         os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
         logger.info('Set QGIS enviroment.')
