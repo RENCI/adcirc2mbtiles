@@ -357,7 +357,7 @@ def moveRaw(inputFile, outputDir, finalDir):
             logger.info('No aux.xml file to remove.')
 
         shutil.move(outputDir+tifRaw, finalDir+tifRaw)
-        logger.info('Moved raw tiff file '+tifRaw+ 'to '+finalDir+' directory.')
+        logger.info('Moved raw tiff file '+tifRaw+ ' to '+finalDir+' directory.')
     else:
         logger.info('Raw tiff file '+finalDir+tifRaw+' does not exist.')
 
@@ -367,7 +367,7 @@ def moveBar(barPathFile, outputDir, finalDir):
     # Check if raw tiff exists, and move it.
     if os.path.exists(barPathFile):
         shutil.move(barPathFile, finalDir+barFile)
-        logger.info('Moved colorbar file '+finalDir+barFile+ 'to final/tiff directory.')
+        logger.info('Moved colorbar file '+finalDir+barFile+ ' to final/tiff directory.')
     else:
         logger.info('Colorbar file '+finalDir+barFile+' does not exist.')
 

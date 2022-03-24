@@ -34,13 +34,18 @@ RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
 RUN conda update conda && \
     conda config --add channels conda-forge
 
+# add user nru
 RUN useradd -m -d /home/nru -u 1000 nru
 RUN chmod 777 /home/nru
 USER nru
 
+# make app directory in nru
 RUN mkdir /home/nru/app
 WORKDIR /home/nru/app
 RUN chmod 777 -R .
+
+# this dir was expected by the running pod. this will insure that it isnt defaulted to something else
+RUN mkdir -p /home/nru/.config/matplotlib
 
 # Create the environment, initialize conda in bash config files, and install repos:
 COPY environment.yml .
@@ -60,3 +65,6 @@ WORKDIR /home/nru/repos/adcirc2mbtiles/run
 
 # set the python path
 ENV PYTHONPATH=/home/nru/repos/adcirc2mbtiles
+
+# tell conda what the shell is
+RUN conda init bash
