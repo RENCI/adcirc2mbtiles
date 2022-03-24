@@ -49,14 +49,19 @@ RUN conda env create -f environment.yml
 # make d directory for the repos and go there
 RUN mkdir /home/nru/repos
 WORKDIR /home/nru/repos
-RUN chmod 777 -R .
 
 # get the repos
 RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
+# this dir was expected by the running pod. this will insure that it isnt defaulted to something else
+RUN mkdir -p /home/nru/.config/matplotlib
+
 # change to the run directory                        
 WORKDIR /home/nru/repos/adcirc2mbtiles/run
+
+# make sure everything is read/write
+RUN chmod 777 -R .
 
 # set the python path
 ENV PYTHONPATH=/home/nru/repos/adcirc2mbtiles
