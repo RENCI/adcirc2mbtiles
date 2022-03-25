@@ -89,7 +89,7 @@ def main(args):
         geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, inputDir, outputDir, finalDir)
 
     else:
-        logger.info(inputFile+' does not exist')
+        logger.info(inputDir+inputFile+' does not exist')
         sys.exit(0)
 
 if __name__ == "__main__":
