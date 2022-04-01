@@ -14,7 +14,7 @@
 # file and 7 GB for the color tiff file, for a total of 22 GB.
 # set the base image
 ##############
-FROM continuumio/miniconda
+FROM alexberkovich/alpine-anaconda3:latest
 
 # author
 MAINTAINER Jim McManus
@@ -24,18 +24,17 @@ LABEL version="1.0"
 LABEL description="adcirc2mbtiles image with Dockerfile."
 
 # update sources list, and install basic apps, one per line for better caching
-RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
-    apt-get install -qy vim \
-    libgl1 \
-    libgl1-mesa-dev \
-    aria2
+RUN apk update &&\
+    apk add vim mesa-dev aria2 
 
 # update conda and set the download channel
 RUN conda update conda && \
     conda config --add channels conda-forge
 
 # add user nru
-RUN useradd -m -d /home/nru -u 1000 nru
+RUN addgroup -g 1000 nru
+RUN adduser -D -h /home/nru -G nru -u 1000 nru 
+
 RUN chmod 777 /home/nru
 USER nru
 
@@ -57,7 +56,7 @@ WORKDIR /home/nru/repos
 RUN chmod 777 -R .
 
 # get the repos
-RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
+RUN git clone -b alpine https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
 # change to the run directory                        
