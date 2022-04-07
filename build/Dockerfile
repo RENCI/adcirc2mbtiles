@@ -34,37 +34,39 @@ RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
 RUN conda update conda && \
     conda config --add channels conda-forge
 
-# add user nru
-RUN useradd -m -d /home/nru -u 1000 nru
-RUN chmod 777 /home/nru
-USER nru
+# tell conda what the shell is
+RUN conda init bash
 
-# make app directory in nru
+# create a non-root user
+RUN useradd -m -d /home/nru -u 1000 nru
+
+# create a needed dir
 RUN mkdir /home/nru/app
 WORKDIR /home/nru/app
-RUN chmod 777 -R .
-
-# this dir was expected by the running pod. this will insure that it isnt defaulted to something else
-RUN mkdir -p /home/nru/.config/matplotlib
 
 # Create the environment, initialize conda in bash config files, and install repos:
 COPY environment.yml .
 RUN conda env create -f environment.yml
 
-# make d directory for the repos and go there
+# make a directory for the repos and go there
 RUN mkdir /home/nru/repos
 WORKDIR /home/nru/repos
-RUN chmod 777 -R .
 
 # get the repos
 RUN git clone https://github.com/renci/adcirc2mbtiles.git &&\
     git clone https://github.com/pchynoweth/gdal2mbtiles.git
 
-# change to the run directory                        
+# this dir was expected by the running pod. this will insure that it isnt defaulted to something else
+RUN mkdir -p /home/nru/.config/matplotlib
+
+# change to the run directory
 WORKDIR /home/nru/repos/adcirc2mbtiles/run
+
+# make sure everything is read/write
+RUN chmod 777 -R /home/nru
+
+# switch to the non-root user
+USER nru
 
 # set the python path
 ENV PYTHONPATH=/home/nru/repos/adcirc2mbtiles
-
-# tell conda what the shell is
-RUN conda init bash
