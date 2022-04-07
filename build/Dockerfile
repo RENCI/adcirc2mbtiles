@@ -14,7 +14,7 @@
 # file and 7 GB for the color tiff file, for a total of 22 GB.
 # set the base image
 ##############
-FROM continuumio/miniconda
+FROM continuumio/miniconda3
 
 # author
 MAINTAINER Jim McManus
@@ -33,9 +33,6 @@ RUN apt-get clean && apt-get --allow-releaseinfo-change update &&\
 # update conda and set the download channel
 RUN conda update conda && \
     conda config --add channels conda-forge
-
-# tell conda what the shell is
-RUN conda init bash
 
 # create a non-root user
 RUN useradd -m -d /home/nru -u 1000 nru
@@ -70,3 +67,7 @@ USER nru
 
 # set the python path
 ENV PYTHONPATH=/home/nru/repos/adcirc2mbtiles
+
+# tell conda what the shell is
+RUN conda init bash
+
