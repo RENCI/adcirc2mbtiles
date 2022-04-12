@@ -90,7 +90,7 @@ def main(args):
 
     else:
         logger.info(inputDir+inputFile+' does not exist')
-        sys.exit(0)
+        sys.exit(1)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """

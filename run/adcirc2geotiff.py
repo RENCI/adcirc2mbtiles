@@ -93,7 +93,7 @@ def exportRaster(parameters):
     for dim in ds.dimensions.values():
         if dim.size == 0:
             logger.info('The netCDF file '+meshfile.split('"')[0]+' has an invalid dimension value of 0, so the program will exit')
-            sys.exit(0)
+            sys.exit(1)
 
     # Check if layer is valid
     if layer.isValid() is True:
@@ -603,7 +603,7 @@ def main(args):
         logger.info('Moved colorbar png file')
     else:
          logger.info(inputDIR+inputFile+' does not exist')
-         sys.exit(0)
+         sys.exit(1)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
