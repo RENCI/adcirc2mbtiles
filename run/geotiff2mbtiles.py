@@ -26,6 +26,7 @@ def geotiff2mbtiles(inputFile, zlstart, zlstop, cpu, inputDir, outputDir, finalD
     elif diffzl == 0:
         zl = zlstart
     else:
+        logger.info('Incorrect zoom level')
         sys.exit('Incorrect zoom level')
 
     # Define output file name
