@@ -91,7 +91,7 @@ def main(args):
 
     else:
         logger.info(inputDir+inputFile+' does not exist')
-        if inputFile.starstswith("swan"):
+        if inputFile.startswith("swan"):
             sys.exit(0)
         else:
             sys.exit(1)
