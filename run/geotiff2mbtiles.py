@@ -83,7 +83,7 @@ def main(args):
     # Check if input file exist, and then run geotiff2mbtiles function
     if os.path.exists(inputDir+inputFile):
         # When error exit program
-        logger.add(lambda _: sys.exit(1), level="ERROR")
+        logger.add(lambda _: sys.exit(0), level="ERROR")
 
         logger.info('Create mbtiles file, with zoom levels '+zlstart+' to '+zlstop+', from '+inputFile.strip()+' tiff file '+inputFile+' using '+cpu+' CPUs.')
 
@@ -91,7 +91,10 @@ def main(args):
 
     else:
         logger.info(inputDir+inputFile+' does not exist')
-        sys.exit(1)
+        if inputFile.starstswith("swan"):
+            sys.exit(0)
+        else:
+            sys.exit(1)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """

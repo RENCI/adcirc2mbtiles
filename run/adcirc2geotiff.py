@@ -538,7 +538,7 @@ def main(args):
     # Check to see if input directory exits and if it does create tiff
     if os.path.exists(inputDir+inputFile):
         # When error exit program
-        logger.add(lambda _: sys.exit(1), level="ERROR")
+        logger.add(lambda _: sys.exit(0), level="ERROR")
 
         # Make output directory
         makeDirs(outputDir.strip())
@@ -603,7 +603,10 @@ def main(args):
         logger.info('Moved colorbar png file')
     else:
          logger.info(inputDIR+inputFile+' does not exist')
-         sys.exit(1)
+         if inputFile.starstswith("swan"):
+             sys.exit(0)
+         else:
+             sys.exit(1)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
