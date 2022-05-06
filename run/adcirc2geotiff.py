@@ -79,7 +79,7 @@ def getParameters(inputDir, inputFile, outputDir):
 
 # Convert mesh layer as raster and save as a GeoTiff
 @ignore_warnings
-def exportRaster(parameters):
+def exportRaster(parameters, tmpDir):
     # Open layer from INPUT_LAYER 
     logger.info('Open layer from INPUT_LAYER') 
     inputFile = 'Ugrid:'+'"'+parameters['INPUT_LAYER']+'"'
@@ -130,8 +130,10 @@ def exportRaster(parameters):
 
         # Regred mesh layer to raster
         logger.info('Regrid mesh layer')
+        os.chdir(tmpDir)
         block = QgsMeshUtils.exportRasterBlock( layer, dataset_index, crs,
                 transform_context, mupp, extent) 
+        os.chdir('/home/nru/repos/adcirc2mbtiles/run')
 
         # Write raster to GeoTiff file
         logger.info('Write raster Geotiff file')
@@ -148,7 +150,7 @@ def exportRaster(parameters):
 
 # Add color and set transparency to GeoTiff
 @ignore_warnings
-def styleRaster(filename, colorscaling):
+def styleRaster(filename, colorscaling, tmpDir):
     # Create outfile name
     outfile = "".join(filename.strip().split('.raw'))
 
@@ -287,6 +289,8 @@ def styleRaster(filename, colorscaling):
             logger.info('Incorrect colorscaling value')
             sys.exit('Incorrect colorscaling value')
 
+        os.chdir(tmpDir)
+
         # Create raster shader and add color ramp function
         logger.info('Create raster shader, add color ramp function')
         shader = QgsRasterShader()
@@ -327,6 +331,8 @@ def styleRaster(filename, colorscaling):
             crs,
             transform_context
         )
+
+        os.chdir('/home/nru/repos/adcirc2mbtiles/run')
 
         logger.info('Conveted data in '+rasterfile+' from float64 to 8bit, added color palette and saved to tiff ('+outfile+') file')
 
@@ -530,6 +536,9 @@ def main(args):
     outputDir = os.path.join(args.outputDir, '')
     finalDir = os.path.join(args.finalDir, '')
 
+    # Define tmp directory
+    tmpDir = "/".join(inputDir.split("/")[:-2])+"/"+inputFile.split('.')[0]+"_qgis_tmp/"
+
     # Remove old logger and start new one
     logger.remove()
     log_path = os.path.join(os.getenv('LOG_PATH', os.path.join(os.path.dirname(__file__), 'logs')), '')
@@ -548,7 +557,19 @@ def main(args):
         xdg_runtime_dir = '/home/nru/adcirc2geotiff'
         os.makedirs(xdg_runtime_dir, exist_ok=True)
         os.environ['XDG_RUNTIME_DIR']=xdg_runtime_dir
+        os.makedirs(tmpDir, exist_ok=True)
+        os.environ['TMPDIR'] = tmpDir
         logger.info('Set QGIS enviroment.')
+
+        # Check if tmpDir exists
+        if not os.path.exists(tmpDir):
+            logger.error('The tmpDir: '+tmpDir+' does not exist')
+            sys.exit(1)
+        elif os.path.exists(tmpDir):
+            logger.info('The tmpDir: '+tmpDir+' does exist')
+        else:
+            logger.error('Checked for tmpDir: '+tmpDir+', and else statement happened')
+            sys.exit(1)
 
         # Initialize QGIS
         app = initialize_qgis_application() 
@@ -561,10 +582,10 @@ def main(args):
         logger.info('Got mesh regrid paramters for '+inputDir+inputFile.strip())
 
         # Create raw tiff file
-        filename = exportRaster(parameters)
+        filename = exportRaster(parameters, tmpDir)
 
         # Create raw color file
-        valueList = styleRaster(filename, 'discrete')
+        valueList = styleRaster(filename, 'discrete', tmpDir)
 
         # Define color bar path and color bar variable name
         barPathFile = ".".join("".join(filename.strip().split('.raw')).split('.')[0:-1])+'.colorbar.png'
