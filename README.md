@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2022 Renaissance Computing Institute. All rights reserved.
+
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-License-Identifier: LicenseRef-RENCI
+SPDX-License-Identifier: MIT
+-->
+
 # adcirc2mbtiles
 Converts ADCIRC mesh data, in a NetCDF file to a MapBox tiles (mbtiles) file. The Python program geotiff2mbtiles.py uses the GitHub repository [gdal2mbtiles](https://github.com/pchynoweth/gdal2mbtiles.git) by pchynoweth.
 
